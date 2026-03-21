@@ -1,3 +1,49 @@
+<!--
+  Input_SoundCalibration_001.html
+  DESTINATION: /public/
+
+  PUZZLE: Calibrate Output (Stage 1, puzzle 3 of 3)
+  MECHANIC: Three channel sliders (L/C/R). Player aligns each bar by feel with no visual target.
+  TARGET: Left=65, Centre=40, Right=55 (in config object, tolerance 3)
+  SOLVE: Parent sends PUZZLE_SUBMIT via postMessage → check() runs
+  CORRECT: Posts PUZZLE_SOLVED to parent → drawer closes
+  WRONG: Inline feedback text, drawer stays open
+
+  ── VU BAR RENDERING — READ THIS BEFORE TOUCHING ──────────────────────────
+  The bars (.vu-fill) use flex-basis NOT height. This is intentional and critical.
+
+  Why not position:absolute + height%?
+    percentage heights on absolute children only resolve against an ancestor with
+    an EXPLICIT pixel height. .vu-bar-wrap gets its height from flex:1 (computed,
+    not explicit) so height:50% on an absolute child = 50% of zero = invisible.
+    We tried this. It does not work.
+
+  Why not display:flex + height on the child?
+    Same problem. height:X% on a flex child resolves against the flex container
+    only if that container has an explicit height. flex:1 is not explicit.
+
+  What actually works:
+    .vu-bar-wrap is display:flex, flex-direction:column, justify-content:flex-end
+    .vu-fill has NO height set in CSS — only flex-basis set via JS
+    flex-basis resolves against the flex container actual rendered size, which
+    flex:1 does provide. So flexBasis:50% = 50% of the rendered bar height.
+
+  JS uses:  el.style.flexBasis = val + '%'
+  NOT:      el.style.height = val + '%'
+
+  DO NOT change this back to height or position:absolute. It will break.
+  ──────────────────────────────────────────────────────────────────────────
+
+  REMOVED INTENTIONALLY:
+  - Orange target markers (.vu-target) — made puzzle too easy, player should find
+    values by trial and error using feedback text only
+  - Submit button inside iframe — lives in PuzzleCard context bar (submitLabel: Broadcast)
+
+  DO NOT ADD BACK:
+  - Orange/amber marker lines on the bars
+  - A submit button inside this file
+  - height% or position:absolute on .vu-fill
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -55,10 +101,7 @@ body{
   display:flex;flex-direction:column;justify-content:flex-end;
   position:relative;
 }
-.vu-target{
-  position:absolute;left:0;right:0;height:2px;
-  background:var(--amber);opacity:0.7;pointer-events:none;
-}
+
 .vu-fill{width:100%;transition:height 0.12s,background 0.2s;border-radius:0 0 2px 2px;}
 .vu-lbl{font-family:var(--font-mono);font-size:clamp(8px,2.2vw,9px);color:var(--muted);}
 
@@ -164,7 +207,6 @@ function buildVU() {
     col.className = 'vu-ch'
     col.innerHTML = `
       <div class="vu-bar-wrap">
-        <div class="vu-target" id="vt-${i}" style="bottom:${ch.target}%"></div>
         <div class="vu-fill" id="vf-${i}" style="flex-basis:50%;height:0;background:${ch.color}40"></div>
       </div>
       <span class="vu-lbl">${ch.label}</span>
