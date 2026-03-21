@@ -11,8 +11,8 @@ export const item = {
   droppedBy: null,
   source: 'location',
   sourceLabel: 'Found near the pond path',
-  combinedWith: null,
-  combinationMechanic: null,
+  combinedWith: 'uv-torch',
+  combinationMechanic: 'uv',
   isRedHerring: false,
   content: {
     title: null,
@@ -22,5 +22,6 @@ If anyone finds this, they will have questions. Those questions will lead back t
 
 I am telling you this as a courtesy. Destroy the other copy.`,
     signature: '— T',
+  hiddenAnnotations: [],
   },
 }

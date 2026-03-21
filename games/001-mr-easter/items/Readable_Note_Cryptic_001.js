@@ -10,8 +10,8 @@ export const item = {
   description: "A tiny folded note. The handwriting is small and hurried, like it was written in a rush.",
   droppedBy: 'Mr Easter',
   source: 'character',
-  combinedWith: null,
-  combinationMechanic: null,
+  combinedWith: 'uv-torch',
+  combinationMechanic: 'uv',
   isRedHerring: false,
   content: {
     title: null,
@@ -23,5 +23,6 @@ Below the roots, not above.
 
 You have until the bells.`,
     signature: null,
+  hiddenAnnotations: [],
   },
 }

@@ -8,8 +8,8 @@ export const item = {
   name: 'Nap log',
   type: 'Readable_NapLog_001',
   description: "A worn leather-bound log. Every page filled with dates, times, and duration of naps.",
-  combinedWith: null,
-  combinationMechanic: null,
+  combinedWith: 'uv-torch',
+  combinationMechanic: 'uv',
   isRedHerring: true,
   content: {
     title: "LAZY BUNNY'S OFFICIAL NAP RECORD",
@@ -27,5 +27,6 @@ export const item = {
       { date: '18/04', time: '22:00', duration: '??', notes: 'Attempted. Could not sleep. Suspicious activity nearby.' },
     ],
     note: 'Total recorded naps to date: 34,310',
+  hiddenAnnotations: [],
   },
 }

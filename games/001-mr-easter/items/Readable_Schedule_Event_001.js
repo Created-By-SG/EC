@@ -11,8 +11,8 @@ export const item = {
   droppedBy: null,
   source: 'location',
   sourceLabel: 'Pinned to the noticeboard near the east gate',
-  combinedWith: null,
-  combinationMechanic: null,
+  combinedWith: 'uv-torch',
+  combinationMechanic: 'uv',
   isRedHerring: false,
   content: {
     title: 'EASTER IN THE PARK — OFFICIAL SCHEDULE',
@@ -28,5 +28,6 @@ export const item = {
       { ref: '18:00', contents: 'Gates close', shelf: 'All areas', status: 'CONFIRMED' },
     ],
     signed: 'Note: Zone B access change authorised by Mr Easter — 17 Apr, 22:41',
+  hiddenAnnotations: [],
   },
 }

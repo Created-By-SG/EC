@@ -12,8 +12,8 @@ export const item = {
   droppedBy: null,
   source: 'location',
   sourceLabel: 'Found near the north fence',
-  combinedWith: null,
-  combinationMechanic: null,
+  combinedWith: 'uv-torch',
+  combinationMechanic: 'uv',
   isRedHerring: false,
   content: {
     title: 'MAP FRAGMENT [1 OF 3]',
@@ -30,5 +30,6 @@ North fence — — — — — — — — — —
 A small annotation at the top reads:
 "Confirmed: the third marker is not on this section."`,
     signature: null,
+  hiddenAnnotations: [],
   },
 }

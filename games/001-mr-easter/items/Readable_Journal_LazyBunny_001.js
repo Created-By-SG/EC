@@ -10,8 +10,8 @@ export const item = {
   description: "A soft-covered diary dedicated entirely to sleep. Every entry is a nap review.",
   droppedBy: 'Lazy',
   source: 'character',
-  combinedWith: null,
-  combinationMechanic: null,
+  combinedWith: 'uv-torch',
+  combinationMechanic: 'uv',
   isRedHerring: false,
   content: {
     title: "LAZY BUNNY'S SLEEP DIARY — DO NOT DISTURB",
@@ -24,5 +24,6 @@ export const item = {
       { time: '17 Apr', text: 'DO NOT SLEEP ON THE 3RD. Reminder to self. Porridge said so.' },
       { time: '18 Apr', text: 'Did not sleep. Was asked to watch something. Will not say what.' },
     ],
+  hiddenAnnotations: [],
   },
 }

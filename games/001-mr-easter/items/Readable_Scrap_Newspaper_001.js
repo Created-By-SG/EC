@@ -11,8 +11,8 @@ export const item = {
   droppedBy: null,
   source: 'location',
   sourceLabel: 'Wedged under the leg of the park bench',
-  combinedWith: null,
-  combinationMechanic: null,
+  combinedWith: 'uv-torch',
+  combinationMechanic: 'uv',
   isRedHerring: false,
   content: {
     title: 'CLASSIFIEDS — NOTICES',
@@ -30,5 +30,6 @@ NOTICE: The arrangement for 18 April
 remains in place. Parties concerned
 should confirm by return. — Box 441`,
     signature: null,
+  hiddenAnnotations: [],
   },
 }

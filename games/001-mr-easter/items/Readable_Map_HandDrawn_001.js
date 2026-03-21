@@ -11,8 +11,8 @@ export const item = {
   droppedBy: null,
   source: 'location',
   sourceLabel: 'Found folded inside the park notice frame',
-  combinedWith: null,
-  combinationMechanic: null,
+  combinedWith: 'uv-torch',
+  combinationMechanic: 'uv',
   isRedHerring: false,
   content: {
     title: 'PARK SKETCH — PERSONAL USE',
@@ -25,5 +25,6 @@ export const item = {
       { ref: '?', contents: '[illegible] — near old oak roots', shelf: 'Zone A', status: 'MARKED' },
     ],
     signed: 'Note at bottom: These are not the eggs.',
+  hiddenAnnotations: [],
   },
 }

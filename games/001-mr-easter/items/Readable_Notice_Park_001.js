@@ -11,8 +11,8 @@ export const item = {
   droppedBy: null,
   source: 'location',
   sourceLabel: 'Nailed to the old oak tree',
-  combinedWith: null,
-  combinationMechanic: null,
+  combinedWith: 'uv-torch',
+  combinationMechanic: 'uv',
   isRedHerring: false,
   content: {
     title: 'NOTICE — RESTRICTED ACCESS',
@@ -25,5 +25,6 @@ export const item = {
       { ref: 'Zone D', contents: 'North fence to bench row', shelf: 'Open', status: 'OPEN' },
     ],
     signed: `Access to Zones B and C restricted until further notice.\n\n[sticky note in different handwriting]: Zone B has been open since Tuesday. Someone removed the tape.`,
+  hiddenAnnotations: [],
   },
 }

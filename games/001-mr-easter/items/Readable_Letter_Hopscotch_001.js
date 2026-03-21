@@ -11,8 +11,8 @@ export const item = {
   droppedBy: null,
   source: 'location',
   sourceLabel: 'Found tucked under the park bench',
-  combinedWith: null,
-  combinationMechanic: null,
+  combinedWith: 'uv-torch',
+  combinationMechanic: 'uv',
   isRedHerring: false,
   content: {
     to: 'Hopscotch',
@@ -28,5 +28,6 @@ Do not involve the others. Particularly not L.
 
 Destroy this after reading. If you are reading this and you are not Hopscotch, then congratulations — you are now part of something you were not supposed to find.`,
     signed: '🥕',
+  hiddenAnnotations: [],
   },
 }

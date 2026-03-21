@@ -10,8 +10,8 @@ export const item = {
   description: "A third of a yellow ribbon, torn at both ends. There is faint writing along one edge. It cuts off mid-sentence.",
   droppedBy: 'Mr Easter',
   source: 'character',
-  combinedWith: null,
-  combinationMechanic: null,
+  combinedWith: 'uv-torch',
+  combinationMechanic: 'uv',
   isRedHerring: false,
   content: {
     title: 'RIBBON FRAGMENT [1 OF 3]',
@@ -21,5 +21,6 @@ export const item = {
 
 [ribbon torn — text continues on missing section]`,
     signature: null,
+  hiddenAnnotations: [],
   },
 }

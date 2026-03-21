@@ -10,8 +10,8 @@ export const item = {
   description: "A small battered journal. Soft cover, corners worn down. His initials are stamped inside.",
   droppedBy: 'Mr Easter',
   source: 'character',
-  combinedWith: null,
-  combinationMechanic: null,
+  combinedWith: 'uv-torch',
+  combinationMechanic: 'uv',
   isRedHerring: false,
   content: {
     title: 'PERSONAL — DO NOT READ',
@@ -27,5 +27,6 @@ The arrangement began three seasons ago. I was approached. I said no. Then I sai
 
 What I am is careful. And careful people keep notes.`,
     signature: 'E.',
+  hiddenAnnotations: [],
   },
 }

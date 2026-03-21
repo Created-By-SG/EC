@@ -8,8 +8,8 @@ export const item = {
   name: 'Receipt',
   type: 'Readable_Receipt_001',
   description: 'A crumpled receipt found in Chuckles pocket.',
-  combinedWith: null,
-  combinationMechanic: null,
+  combinedWith: 'uv-torch',
+  combinationMechanic: 'uv',
   isRedHerring: true,
   content: {
     vendor: 'WAREHOUSE SUPPLIES CO',
@@ -25,5 +25,6 @@ export const item = {
     total: '95.89',
     paid: 'CASH',
     note: 'Thank you for your purchase',
+  hiddenAnnotations: [],
   },
 }

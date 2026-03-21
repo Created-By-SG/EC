@@ -9,8 +9,8 @@ export const item = {
   name: 'Internal memo',
   type: 'Readable_Memo_001',
   description: 'An official memo from Easter HQ. Lots of numbers and policy references.',
-  combinedWith: null,
-  combinationMechanic: null,
+  combinedWith: 'uv-torch',
+  combinationMechanic: 'uv',
   isRedHerring: true,
   content: {
     from: 'Easter HQ Operations',
@@ -31,5 +31,6 @@ Any discrepancies in the manifest must be reported to the shift supervisor withi
 Failure to comply with protocol 7.3(b) may result in suspension of delivery privileges.`,
     signed: 'Operations Division — Easter HQ',
     note: 'Policy reference 7741 supersedes all previous protocols dated before March 2025.',
+  hiddenAnnotations: [],
   },
 }

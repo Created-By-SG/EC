@@ -11,8 +11,8 @@ export const item = {
   droppedBy: null,
   source: 'location',
   sourceLabel: 'Left under the base of the old oak',
-  combinedWith: null,
-  combinationMechanic: null,
+  combinedWith: 'uv-torch',
+  combinationMechanic: 'uv',
   isRedHerring: false,
   content: {
     title: 'CHALK RUBBING — EAST GATE STONE',
@@ -26,5 +26,6 @@ The marks appear to show:
 
 The chalk was recent. Still slightly smudged at the edges.`,
     signature: null,
+  hiddenAnnotations: [],
   },
 }

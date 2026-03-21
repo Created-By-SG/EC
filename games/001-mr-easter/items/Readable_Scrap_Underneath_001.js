@@ -11,12 +11,13 @@ export const item = {
   droppedBy: null,
   source: 'location',
   sourceLabel: 'Found caught in the fence near the east gate',
-  combinedWith: null,
-  combinationMechanic: null,
+  combinedWith: 'uv-torch',
+  combinationMechanic: 'uv',
   isRedHerring: false,
   content: {
     title: null,
     text: `UNDERNEATH`,
     signature: null,
+  hiddenAnnotations: [],
   },
 }
