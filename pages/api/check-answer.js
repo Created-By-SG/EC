@@ -39,15 +39,23 @@ function checkPuzzleAnswer(puzzleDef, answer) {
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
-  const { game, stage, answer, puzzleType } = req.body
+  // storyIndex — which step in a multi-puzzle storyPool the player is currently on
+  //              (stage 1 has 3 sequential puzzles; other stages have 1 so it defaults to 0)
+  // puzzleIndex — the randomly assigned pool variant for this session (from stage_progress)
+  const { game, stage, answer, puzzleType, storyIndex, puzzleIndex } = req.body
   if (!game || !stage || answer === undefined) {
     return res.status(400).json({ error: 'Missing fields' })
   }
 
   try {
-    // Check against story puzzle first, then geo puzzle
-    const storyPuzzle = getStoryPuzzle(stage)
-    const geoPuzzle = getGeoPuzzle(stage)
+    // Resolve the correct puzzle definition using both indices.
+    // storyIndex selects which sub-puzzle within a multi-step storyPool.
+    // puzzleIndex selects which pool variant was assigned to this session.
+    const resolvedStoryIndex = Number(storyIndex ?? 0)
+    const resolvedPoolIndex  = Number(puzzleIndex ?? 0)
+
+    const storyPuzzle = getStoryPuzzle(stage, resolvedStoryIndex)
+    const geoPuzzle   = getGeoPuzzle(stage, resolvedPoolIndex)
 
     let correct = false
 
