@@ -44,7 +44,7 @@ body{
   display:flex;justify-content:center;align-items:flex-end;gap:16px;
   padding:clamp(10px,2dvh,16px) 20px clamp(10px,2dvh,14px);
   background:#020408;
-  height:clamp(115px,40dvh,161px);
+  height:clamp(115px,23dvh,161px);
   flex-shrink:1;min-height:0;
 }
 .vu-ch{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;}
@@ -59,7 +59,7 @@ body{
   position:absolute;left:0;right:0;height:2px;
   background:var(--amber);opacity:0.7;pointer-events:none;
 }
-.vu-fill{width:100%;transition:height 0.12s,background 0.2s;border-radius:0 0 2px 2px;}
+.vu-fill{position:absolute;bottom:0;left:0;right:0;transition:height 0.12s,background 0.2s;border-radius:0 0 2px 2px;}
 .vu-lbl{font-family:var(--font-mono);font-size:clamp(8px,2.2vw,9px);color:var(--muted);}
 
 .sliders{

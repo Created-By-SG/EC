@@ -43,7 +43,7 @@ body{
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
 
 .scope{width:100%;flex-shrink:1;min-height:0;}
-.scope canvas{display:block;width:100%;height:clamp(132px,40dvh,204px);}
+.scope canvas{display:block;width:100%;height:clamp(132px,31dvh,204px);}
 
 .controls{
   padding:clamp(10px,2dvh,18px) 16px clamp(12px,2.5dvh,22px);
@@ -179,7 +179,7 @@ function draw() {
   for(let y=0;y<H;y+=22){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
   // Player wave only
   ctx.beginPath(); ctx.strokeStyle='#3B82F6'; ctx.lineWidth=2
-  for(let x=0;x<=W;x++){const y=mid+(a*0.38)*Math.sin(x*f*0.0018); x===0?ctx.moveTo(x,y):ctx.lineTo(x,y)}
+  for(let x=0;x<=W;x++){const y=mid+(a*0.55)*Math.sin(x*f*0.0018); x===0?ctx.moveTo(x,y):ctx.lineTo(x,y)}
   ctx.stroke()
 }
 
