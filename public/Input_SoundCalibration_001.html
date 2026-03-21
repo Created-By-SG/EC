@@ -11,100 +11,109 @@
   --border:rgba(59,130,246,0.1);--border2:rgba(59,130,246,0.22);
   --text:#F0F4FF;--muted:#6B7A99;
   --font-mono:'DM Mono',monospace;--font-body:'DM Sans',sans-serif;
+  --card-w: min(calc(100vw - 32px), 340px);
 }
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap');
-html,body{background:var(--bg);color:var(--text);font-family:var(--font-body);height:100%;overflow:hidden;}
-body{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:14px;}
+
+html,body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);
+  height:100dvh;overflow:hidden;
+}
+body{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:flex-end;
+  padding:clamp(10px,2dvh,16px) 16px clamp(12px,2.5dvh,20px);
+  gap:clamp(8px,1.5dvh,12px);
+}
 
 .panel{
-  width:100%;max-width:340px;
-  background:var(--bg3);
-  border:1px solid var(--border2);
-  border-radius:12px;
-  overflow:hidden;
+  width:var(--card-w);
+  background:var(--bg3);border:1px solid var(--border2);border-radius:12px;
+  overflow:hidden;flex-shrink:1;min-height:0;
+  display:flex;flex-direction:column;
 }
 .panel-top{
   display:flex;align-items:center;justify-content:space-between;
-  padding:10px 14px;
-  background:rgba(0,0,0,0.25);
+  padding:8px 14px;background:rgba(0,0,0,0.25);flex-shrink:0;
 }
-.panel-label{font-family:var(--font-mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
-.out-status{display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:9px;color:var(--muted);}
+.panel-label{font-family:var(--font-mono);font-size:clamp(8px,2.2vw,9px);letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
+.out-status{display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:clamp(8px,2.2vw,9px);color:var(--muted);}
 .out-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.15);}
 
-/* VU meter display — taller */
 .vu-display{
-  display:flex;
-  justify-content:center;
-  align-items:flex-end;
-  gap:16px;
-  padding:16px 20px 14px;
+  display:flex;justify-content:center;align-items:flex-end;gap:16px;
+  padding:clamp(10px,2dvh,16px) 20px clamp(10px,2dvh,14px);
   background:#020408;
-  height:140px;
+  height:clamp(100px,20dvh,140px);
+  flex-shrink:1;min-height:0;
 }
-.vu-ch{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.vu-ch{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;}
 .vu-bar-wrap{
   width:22px;flex:1;
   background:rgba(255,255,255,0.04);
-  border:1px solid var(--border);
-  border-radius:3px;
-  overflow:hidden;
+  border:1px solid var(--border);border-radius:3px;overflow:hidden;
   display:flex;flex-direction:column;justify-content:flex-end;
   position:relative;
 }
 .vu-target{
   position:absolute;left:0;right:0;height:2px;
-  background:var(--amber);
-  opacity:0.7;
-  pointer-events:none;
+  background:var(--amber);opacity:0.7;pointer-events:none;
 }
 .vu-fill{width:100%;transition:height 0.12s,background 0.2s;border-radius:0 0 2px 2px;}
-.vu-lbl{font-family:var(--font-mono);font-size:9px;color:var(--muted);}
+.vu-lbl{font-family:var(--font-mono);font-size:clamp(8px,2.2vw,9px);color:var(--muted);}
 
-/* Sliders */
-.sliders{padding:14px 16px 18px;display:flex;flex-direction:column;gap:14px;}
+.sliders{
+  padding:clamp(10px,2dvh,14px) 16px clamp(12px,2.5dvh,18px);
+  display:flex;flex-direction:column;gap:clamp(10px,2dvh,14px);
+  flex-shrink:0;
+}
 .sl-row{display:flex;align-items:center;gap:10px;}
-.sl-ch{font-family:var(--font-mono);font-size:10px;width:12px;text-align:center;}
+.sl-ch{font-family:var(--font-mono);font-size:clamp(9px,2.5vw,10px);width:12px;text-align:center;}
 .sl-track{position:relative;flex:1;height:4px;background:var(--bg4);border-radius:2px;}
 input[type=range]{
-  position:absolute;top:50%;left:0;width:100%;height:100%;
+  position:absolute;top:50%;left:0;width:100%;height:44px;
   transform:translateY(-50%);
   -webkit-appearance:none;appearance:none;
   background:transparent;outline:none;cursor:pointer;
 }
+/* Slightly smaller than police scanner (30px) as requested */
 input[type=range]::-webkit-slider-thumb{
   -webkit-appearance:none;
-  width:20px;height:20px;border-radius:50%;
+  width:26px;height:26px;border-radius:50%;
   background:var(--accent);
-  border:2px solid var(--bg);
+  border:2.5px solid var(--bg);
+  box-shadow:0 0 0 2px var(--accent);
+  transition:transform 0.1s;
 }
-.sl-val{font-family:var(--font-mono);font-size:11px;color:var(--text);width:26px;text-align:right;}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.15);}
+input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--accent);border:2.5px solid var(--bg);}
+.sl-val{font-family:var(--font-mono);font-size:clamp(10px,2.8vw,11px);color:var(--text);width:26px;text-align:right;}
 
 .submit-btn{
-  width:100%;max-width:340px;
-  padding:14px;background:var(--accent);border:none;border-radius:8px;
-  color:#fff;font-family:var(--font-mono);font-size:11px;font-weight:500;
-  letter-spacing:2px;text-transform:uppercase;cursor:pointer;
+  width:var(--card-w);padding:clamp(11px,2dvh,14px);
+  background:var(--accent);border:none;border-radius:8px;
+  color:#fff;font-family:var(--font-mono);font-size:clamp(10px,2.8vw,11px);font-weight:500;
+  letter-spacing:2px;text-transform:uppercase;cursor:pointer;flex-shrink:0;
   transition:background 0.15s,opacity 0.15s;
 }
 .submit-btn:hover{background:#2563EB;}
 .submit-btn:disabled{opacity:0.4;cursor:not-allowed;}
 
 .feedback{
-  font-family:var(--font-mono);font-size:11px;
+  font-family:var(--font-mono);font-size:clamp(10px,2.8vw,11px);
   color:var(--muted);text-align:center;min-height:14px;
-  max-width:340px;
+  width:var(--card-w);flex-shrink:0;
 }
 
 .solved-box{
   display:none;flex-direction:column;align-items:center;gap:6px;
-  padding:14px 20px;background:rgba(16,185,129,0.06);
+  padding:12px 20px;background:rgba(16,185,129,0.06);
   border:1px solid rgba(16,185,129,0.2);border-radius:10px;
-  text-align:center;max-width:340px;width:100%;
+  text-align:center;width:var(--card-w);flex-shrink:0;
 }
 .solved-box.show{display:flex;}
-.solved-title{font-family:var(--font-mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);}
-.solved-msg{font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5;}
+.solved-title{font-family:var(--font-mono);font-size:clamp(9px,2.5vw,10px);letter-spacing:2px;text-transform:uppercase;color:var(--teal);}
+.solved-msg{font-size:clamp(11px,3vw,12px);color:rgba(255,255,255,0.6);line-height:1.5;}
 </style>
 </head>
 <body>
@@ -161,7 +170,6 @@ function buildVU() {
   config.channels.forEach((ch, i) => {
     const col = document.createElement('div')
     col.className = 'vu-ch'
-    col.style.flex = '1'
     col.innerHTML = `
       <div class="vu-bar-wrap" style="flex:1;min-height:0;">
         <div class="vu-target" id="vt-${i}" style="bottom:${ch.target}%"></div>
@@ -194,7 +202,6 @@ function update() {
   config.channels.forEach((ch, i) => {
     const val = +document.getElementById(`sl-${i}`).value
     document.getElementById(`sv-${i}`).textContent = val
-    // VU fill — colour stays channel colour, no green feedback
     document.getElementById(`vf-${i}`).style.height = val + '%'
     document.getElementById(`vf-${i}`).style.background = ch.color + '80'
   })
@@ -211,7 +218,6 @@ function check() {
 
   if (allOk) {
     solved = true
-    // Now show green on all VU bars
     config.channels.forEach((_, i) => {
       document.getElementById(`vf-${i}`).style.background = '#10B981'
     })

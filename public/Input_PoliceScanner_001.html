@@ -11,31 +11,53 @@
   --border:rgba(59,130,246,0.1);--border2:rgba(59,130,246,0.22);
   --text:#F0F4FF;--muted:#6B7A99;
   --font-mono:'DM Mono',monospace;--font-body:'DM Sans',sans-serif;
+  --card-w: min(calc(100vw - 32px), 340px);
 }
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap');
-html,body{background:var(--bg);color:var(--text);font-family:var(--font-body);height:100%;overflow:hidden;}
-body{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:14px;}
 
-.scanner{width:100%;max-width:340px;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;overflow:hidden;}
-.scanner-top{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(0,0,0,0.25);}
-.scanner-brand{font-family:var(--font-mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
-.scanner-status{display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:9px;color:var(--muted);}
+html,body{
+  background:var(--bg);color:var(--text);font-family:var(--font-body);
+  height:100dvh;overflow:hidden;
+}
+body{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:flex-end;
+  padding:clamp(10px,2dvh,16px) 16px clamp(12px,2.5dvh,20px);
+  gap:clamp(8px,1.5dvh,12px);
+}
+
+.scanner{
+  width:var(--card-w);
+  background:var(--bg3);border:1px solid var(--border2);border-radius:12px;
+  overflow:hidden;flex-shrink:1;min-height:0;
+  display:flex;flex-direction:column;
+}
+.scanner-top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;background:rgba(0,0,0,0.25);flex-shrink:0;
+}
+.scanner-brand{font-family:var(--font-mono);font-size:clamp(8px,2.2vw,9px);letter-spacing:3px;text-transform:uppercase;color:var(--muted);}
+.scanner-status{display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:clamp(8px,2.2vw,9px);color:var(--muted);}
 .status-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);animation:pulse 1.4s ease-in-out infinite;}
 .status-dot.locked{background:var(--teal);animation:none;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
 
-.scope{width:100%;height:110px;background:#020408;}
-.scope canvas{display:block;width:100%;height:110px;}
+.scope{width:100%;flex-shrink:1;min-height:0;}
+.scope canvas{display:block;width:100%;height:clamp(70px,18dvh,110px);}
 
-.controls{padding:18px 16px 22px;display:flex;flex-direction:column;gap:22px;}
-.ch{display:flex;flex-direction:column;gap:10px;}
+.controls{
+  padding:clamp(10px,2dvh,18px) 16px clamp(12px,2.5dvh,22px);
+  display:flex;flex-direction:column;gap:clamp(14px,2.5dvh,22px);
+  flex-shrink:0;
+}
+.ch{display:flex;flex-direction:column;gap:clamp(6px,1dvh,10px);}
 .ch-header{display:flex;align-items:center;justify-content:space-between;}
-.ch-label{font-family:var(--font-mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+.ch-label{font-family:var(--font-mono);font-size:clamp(8px,2.2vw,9px);letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
 .ch-value{display:flex;align-items:baseline;gap:3px;}
-.ch-num{font-family:var(--font-mono);font-size:20px;font-weight:500;color:var(--text);min-width:34px;text-align:right;}
-.ch-unit{font-family:var(--font-mono);font-size:9px;color:var(--muted);}
+.ch-num{font-family:var(--font-mono);font-size:clamp(16px,5vw,20px);font-weight:500;color:var(--text);min-width:34px;text-align:right;}
+.ch-unit{font-family:var(--font-mono);font-size:clamp(8px,2.2vw,9px);color:var(--muted);}
 
-.sl-wrap{padding:8px 0;}
+.sl-wrap{padding:6px 0;}
 .sl-track{position:relative;height:6px;background:var(--bg4);border-radius:3px;}
 input[type=range]{
   position:absolute;top:50%;left:0;width:100%;height:48px;
@@ -56,23 +78,28 @@ input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;bac
 .sl-fill{position:absolute;top:0;left:0;height:100%;background:var(--accent);border-radius:3px;pointer-events:none;transition:width 0.05s;}
 
 .submit-btn{
-  width:100%;max-width:340px;padding:14px;background:var(--accent);border:none;border-radius:8px;
-  color:#fff;font-family:var(--font-mono);font-size:11px;font-weight:500;
-  letter-spacing:2px;text-transform:uppercase;cursor:pointer;
+  width:var(--card-w);padding:clamp(11px,2dvh,14px);
+  background:var(--accent);border:none;border-radius:8px;
+  color:#fff;font-family:var(--font-mono);font-size:clamp(10px,2.8vw,11px);font-weight:500;
+  letter-spacing:2px;text-transform:uppercase;cursor:pointer;flex-shrink:0;
 }
 .submit-btn:disabled{opacity:0.4;cursor:not-allowed;}
 
-.feedback{font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:center;min-height:14px;max-width:340px;}
+.feedback{
+  font-family:var(--font-mono);font-size:clamp(10px,2.8vw,11px);
+  color:var(--muted);text-align:center;min-height:14px;
+  width:var(--card-w);flex-shrink:0;
+}
 
 .solved-box{
   display:none;flex-direction:column;align-items:center;gap:6px;
-  padding:14px 20px;background:rgba(16,185,129,0.06);
+  padding:12px 20px;background:rgba(16,185,129,0.06);
   border:1px solid rgba(16,185,129,0.2);border-radius:10px;
-  text-align:center;max-width:340px;width:100%;
+  text-align:center;width:var(--card-w);flex-shrink:0;
 }
 .solved-box.show{display:flex;}
-.solved-title{font-family:var(--font-mono);font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);}
-.solved-msg{font-size:12px;color:rgba(255,255,255,0.6);line-height:1.5;}
+.solved-title{font-family:var(--font-mono);font-size:clamp(9px,2.5vw,10px);letter-spacing:2px;text-transform:uppercase;color:var(--teal);}
+.solved-msg{font-size:clamp(11px,3vw,12px);color:rgba(255,255,255,0.6);line-height:1.5;}
 </style>
 </head>
 <body>
@@ -122,7 +149,6 @@ input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;bac
 </div>
 
 <script>
-// Target is 73Hz / 42% — both within the shorter ranges (40-110 / 20-70)
 let config = { targetFreq:73, targetAmp:42, tolerance:1, solvedTitle:'Signal Intercepted', solvedMessage:'Broadcast channel open. Ready to transmit.' }
 let solved = false
 const FREQ_MIN=40, FREQ_MAX=110, AMP_MIN=20, AMP_MAX=70
@@ -131,7 +157,7 @@ window.addEventListener('message', e => { if (e.data?.type === 'PUZZLE_CONFIG') 
 
 const canvas = document.getElementById('scopeCanvas')
 const ctx = canvas.getContext('2d')
-function resize() { canvas.width = canvas.offsetWidth||340; canvas.height=110 }
+function resize() { canvas.width = canvas.offsetWidth||340; canvas.height = canvas.offsetHeight||90 }
 window.addEventListener('resize', ()=>{ resize(); draw() })
 resize()
 
@@ -151,12 +177,11 @@ function draw() {
   const f=+document.getElementById('freqSlider').value
   const a=+document.getElementById('ampSlider').value
   ctx.clearRect(0,0,W,H)
+  // Grid only -- no ghost target wave
   ctx.strokeStyle='rgba(59,130,246,0.06)'; ctx.lineWidth=1
   for(let x=0;x<W;x+=28){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
   for(let y=0;y<H;y+=22){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
-  ctx.beginPath(); ctx.strokeStyle='rgba(255,255,255,0.1)'; ctx.lineWidth=1.5
-  for(let x=0;x<=W;x++){const y=mid+(config.targetAmp*0.38)*Math.sin(x*config.targetFreq*0.0018); x===0?ctx.moveTo(x,y):ctx.lineTo(x,y)}
-  ctx.stroke()
+  // Player wave only
   ctx.beginPath(); ctx.strokeStyle='#3B82F6'; ctx.lineWidth=2
   for(let x=0;x<=W;x++){const y=mid+(a*0.38)*Math.sin(x*f*0.0018); x===0?ctx.moveTo(x,y):ctx.lineTo(x,y)}
   ctx.stroke()
