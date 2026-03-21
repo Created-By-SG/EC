@@ -625,38 +625,43 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ─── System message box ─── */
+/* ─── System event banner ─── */
 .systemBox {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
-  padding: 12px 16px;
-  margin: 8px 0;
-  background: rgba(16,185,129,0.06);
-  border: 0.5px solid rgba(16,185,129,0.2);
-  border-radius: 10px;
+  padding: 9px 16px;
+  margin: 10px 0;
+  background: rgba(245, 158, 11, 0.08);
+  border-top: 1px solid rgba(245, 158, 11, 0.18);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.18);
+  border-left: none;
+  border-right: none;
+  border-radius: 0;
   animation: popIn 0.22s cubic-bezier(0.34, 1.4, 0.64, 1) both;
 }
 
 .systemIcon {
-  font-size: 16px;
+  font-size: 13px;
   flex-shrink: 0;
+  opacity: 0.7;
 }
 
 .systemText {
-  flex: 1;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
-  color: var(--teal);
-  letter-spacing: 0.5px;
+  color: rgba(245, 158, 11, 0.75);
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  text-align: center;
 }
 
 .systemCheck {
   font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--teal);
+  font-size: 11px;
+  color: rgba(245, 158, 11, 0.6);
   flex-shrink: 0;
 }
