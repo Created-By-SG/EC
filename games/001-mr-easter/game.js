@@ -575,7 +575,7 @@ export const STAGES = Object.keys(STORY).map(key => ({
   geoPool:   PUZZLES[key]?.geoPool   || [],
 }))
 
-function getStage(stage) {
+export function getStage(stage) {
   return STAGES.find(s => s.stage === String(stage)) || null
 }
 
