@@ -1,7 +1,34 @@
 // components/InventoryPanel.js
-// Slide-out inventory bag panel. Triggered by bag icon in game header.
-// Fetches session_items from Supabase via API on mount.
-// Supports item detail view and combination mechanic (drag/tap one item onto another).
+// DESTINATION: games/001-mr-easter/components/
+//
+// Slide-out Kin Sack panel. Triggered by bag icon in game header.
+// Two tabs: Items (inspect) and Merge (combine).
+//
+// ITEMS TAB:
+//   Tap any item to read its full content (note, manifest, physical card etc.)
+//   Items with combinedWith set show a hint pointing to the Merge tab
+//
+// MERGE TAB:
+//   Slot A = tool only (UV torch, cipher wheel, magnifier)
+//   Slot B = any item compatible with that tool (filtered by combinedWith + type rules)
+//   Compatibility rules:
+//     tool + tool = blocked
+//     read + physical = blocked
+//     tool + read = allowed (if combinedWith matches)
+//     tool + physical = allowed (if combinedWith matches)
+//   usedCombos (Set) tracks completed pairs so they don't appear again
+//   Result screen shows mechanic-specific UI (UV reveal, cipher wheel, physical fit etc.)
+//
+// ALL READABLE ITEMS have combinedWith: 'uv-torch' and hiddenAnnotations: []
+//   Fill hiddenAnnotations with { ref, note } entries when writing UV content
+//   The UV reveal puzzle (torch scan mechanic) is built but not yet wired to this
+//
+// DEV_MODE: Shows all items regardless of stage progress
+//
+// IMPORTANT — DO NOT:
+//   - Allow tool in slot B (breaks merge logic)
+//   - Allow read+physical combinations (no mechanic exists for this)
+//   - Remove usedCombos tracking (players would get duplicate results)
 
 import { useState, useEffect, useRef } from 'react'
 import styles from './InventoryPanel.module.css'
@@ -320,7 +347,9 @@ export default function InventoryPanel({ sessionId, isOpen, onClose, allItemDefs
 
   // Items valid for slot A — anything that has at least one possible partner
   function slotAItems() {
+    // Slot A is always a tool
     return items.filter(item =>
+      getItemCategory(item.type) === 'tool' &&
       items.some(other => other.id !== item.id && canCombine(item, other) && !usedCombos.has(comboKey(item, other)))
     )
   }
@@ -355,7 +384,7 @@ export default function InventoryPanel({ sessionId, isOpen, onClose, allItemDefs
         <div className={styles.panel} onClick={e => e.stopPropagation()}>
           <div className={styles.panelHeader}>
             <span className={styles.panelTitle}>
-              {pickingSlot === 'A' ? 'Choose first item' : 'Choose second item'}
+              {pickingSlot === 'A' ? 'Choose a tool' : 'Choose an item'}
             </span>
             <button className={styles.closeBtn} onClick={() => setPickingSlot(null)}>✕</button>
           </div>
@@ -520,7 +549,7 @@ export default function InventoryPanel({ sessionId, isOpen, onClose, allItemDefs
         {/* ── MERGE TAB ── */}
         {activeTab === 'merge' && (
           <div className={styles.mergeTab}>
-            <p className={styles.mergeHint}>Select two compatible items to combine them.</p>
+            <p className={styles.mergeHint}>Choose a tool, then select an item to use it on.</p>
 
             <div className={styles.mergeSlots}>
               {/* Slot A */}

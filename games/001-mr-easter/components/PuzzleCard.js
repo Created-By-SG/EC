@@ -1,7 +1,29 @@
 // components/PuzzleCard.js
-// Chat UI for a single stage. Story messages animate in.
-// NO question in chat — puzzles are triggered via action buttons.
-// Hints live in the puzzle drawer, not here.
+// DESTINATION: games/001-mr-easter/components/
+//
+// Chat UI for a single active stage. Renders story messages with typing animation.
+// Manages the context bar at the bottom — this bar is DYNAMIC and changes based on state:
+//   - Drawer closed  → one button per unsolved puzzle (storyPuzzle + geoPuzzle)
+//   - Drawer open    → one SUBMIT button that fires PUZZLE_SUBMIT into the iframe
+//   - Future states  → character dialogue options, event choices, etc.
+//
+// SUB-PUZZLE PERSISTENCE (bitmask via puzzle_index in stage_progress):
+//   Bit 1 = story puzzle solved, Bit 2 = geo puzzle solved
+//   Written to DB on each sub-puzzle completion via /api/save-progress
+//   Read back on session resume via initialPuzzleMask prop from [slug].js
+//   This means closing/refreshing never loses partial progress within a stage
+//
+// SOLVE CHAIN:
+//   PuzzleDrawer gets PUZZLE_SOLVED from iframe
+//   → fires onPuzzleSolved
+//   → PuzzleCard.handlePuzzleSolved(type) updates local + DB state
+//   → if ALL present puzzles done → onSolved(stage) fires to parent [slug].js
+//   bothSolved checks only puzzles that EXIST for this stage (not hardcoded to both)
+//
+// IMPORTANT — DO NOT:
+//   - Put submit buttons inside iframe HTML files (submit lives here in context bar)
+//   - Hardcode bothSolved as storyDone && geoDone (breaks single-puzzle stages)
+//   - Remove initialPuzzleMask prop (needed for session resume)
 
 import { useState, useEffect, useRef } from 'react'
 import styles from './PuzzleCard.module.css'
@@ -30,6 +52,7 @@ export default function PuzzleCard({
   sessionId,
   onSolved,
   onHintUsed,
+  onPuzzleCompleted,
   puzzlesSolved = 0,
   puzzlesTotal = 2,
   headerOffset = 56,
@@ -153,6 +176,7 @@ export default function PuzzleCard({
 
     // Persist sub-puzzle mask so state survives drawer close / session resume
     const newMask = (newStoryDone ? 1 : 0) | (newGeoDone ? 2 : 0)
+    if (onPuzzleCompleted) onPuzzleCompleted()
     if (sessionId) {
       fetch('/api/save-progress', {
         method: 'POST',
@@ -161,7 +185,10 @@ export default function PuzzleCard({
       }).catch(() => {})
     }
 
-    const bothSolved = newStoryDone && newGeoDone
+    // Stage complete when all present puzzles are done
+    const storyRequired = Boolean(storyPuzzle)
+    const geoRequired   = Boolean(geoPuzzle)
+    const bothSolved = (!storyRequired || newStoryDone) && (!geoRequired || newGeoDone)
     if (bothSolved) {
       setTimeout(() => onSolved(puzzle.stage, null), 800)
     }
