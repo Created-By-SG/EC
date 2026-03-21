@@ -152,7 +152,7 @@ const PUZZLES = {
         isChain: true,
         chain: [
           {
-            iframeSrc: '/puzzles/Sequence_WireConnections_001.html',
+            iframeSrc: '/Sequence_WireConnections_001.html',
             stepLabel: 'Rewire the Board',
             hint_1: 'Each wire colour matches a character initial. Check the items in your sack.',
             hint_2: 'Red=F  Blue=M  Green=P  Yellow=L  Orange=C  Purple=B  White=K  Cyan=H',
@@ -173,7 +173,7 @@ const PUZZLES = {
             },
           },
           {
-            iframeSrc: '/puzzles/Input_PoliceScanner_001.html',
+            iframeSrc: '/Input_PoliceScanner_001.html',
             stepLabel: 'Tune the Scanner',
             hint_1: 'Both channels must be correct at the same time. Check your items for the values.',
             hint_2: 'Frequency: 73 Hz. Amplitude: 42%.',
@@ -187,7 +187,7 @@ const PUZZLES = {
             },
           },
           {
-            iframeSrc: '/puzzles/Input_SoundCalibration_001.html',
+            iframeSrc: '/Input_SoundCalibration_001.html',
             stepLabel: 'Calibrate Output',
             hint_1: 'Align each bar to the orange marker on the VU meter.',
             devAnswer: 'Left=65  Centre=40  Right=55  (align bars to orange markers)',
@@ -208,7 +208,7 @@ const PUZZLES = {
     geoPool: [
       {
         buttonLabel: 'Search the Area',
-        iframeSrc: '/puzzles/Navigation_DirectionMaze_001.html',
+        iframeSrc: '/Navigation_DirectionMaze_001.html',
         hint_1: 'The map item in your sack shows where the traps are placed.',
         hint_2: 'Safe path: R, D, D, R, R, D, R, D, D, L, D, R, R, D, R',
         devAnswer: 'Safe path: Right, Down, Down, Right, Right, Down, Right, Down, Down, Left, Down, Right, Right, Down, Right',
