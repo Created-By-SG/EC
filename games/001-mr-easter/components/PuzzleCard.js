@@ -29,7 +29,7 @@ import { useState, useEffect, useRef } from 'react'
 import styles from './PuzzleCard.module.css'
 import { DEV_MODE } from '../../../lib/devConfig'
 import PuzzleDrawer from './PuzzleDrawer'
-import { getStoryPuzzle, getGeoPuzzle } from '../game'
+import { getStoryPuzzle, getGeoPuzzle, getStage } from '../game'
 
 const SENDER_STYLES = {
   'Mr Easter':   { initial: 'E', color: styles.avatarBlue },
@@ -100,9 +100,9 @@ export default function PuzzleCard({
   useEffect(() => { onSolvedRef.current = onSolved }, [onSolved])
 
   // Look up puzzle definitions for this stage
-  const storyPuzzle = getStoryPuzzle(puzzle.stage, storyIndex)
-  const storyPoolSize = puzzle.storyPool?.length || 1
-  const storyAllDone  = storyIndex >= storyPoolSize
+  const storyPuzzle   = getStoryPuzzle(puzzle.stage, storyIndex)
+  const storyPoolSize  = getStage(puzzle.stage)?.storyPool?.length || 1
+  const storyAllDone   = storyIndex >= storyPoolSize
   const geoPuzzle   = getGeoPuzzle(puzzle.stage)
 
   function typingDelay(text) {
