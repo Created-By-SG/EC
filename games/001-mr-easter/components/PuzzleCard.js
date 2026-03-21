@@ -94,6 +94,8 @@ export default function PuzzleCard({
   const bottomRef    = useRef(null)
   const didAnimate   = useRef(false)
   const prevMsgCount = useRef(0)
+  const onSolvedRef  = useRef(onSolved)  // ref so stale closure never silently drops the call
+  useEffect(() => { onSolvedRef.current = onSolved }, [onSolved])
 
   // Look up puzzle definitions for this stage
   const storyPuzzle = getStoryPuzzle(puzzle.stage)
@@ -190,7 +192,7 @@ export default function PuzzleCard({
     const geoRequired   = Boolean(geoPuzzle)
     const bothSolved = (!storyRequired || newStoryDone) && (!geoRequired || newGeoDone)
     if (bothSolved) {
-      setTimeout(() => onSolved(puzzle.stage, null), 800)
+      setTimeout(() => onSolvedRef.current?.(puzzle.stage, null), 800)
     }
   }
 
