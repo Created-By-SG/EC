@@ -320,246 +320,37 @@ const PUZZLES = {
     ],
   },
 
-  // Stage 2 — Answer: 8 (4 corners x 2 checks)
-  2: {
-    storyPool: [
-      {
-        iframeSrc: '/puzzles/number-dials.html',
-        buttonLabel: 'Count the corners',
-        hint_1: 'Read carefully ... every corner, twice.',
-        hint_2: '4 corners multiplied by 2.',
-        config: {
-          answer: [8],
-          scramble: [3],
-          solvedMessage: 'Eight. Four corners, checked twice. Not a basket in any of them.',
-        },
-      },
-    ],
-    geoPool: [
-      {
-        iframeSrc: '/puzzles/letter-drums.html',
-        buttonLabel: 'Inspect the cold room door',
-        hint_1: 'The number of corners multiplied by the checks. Spell it out.',
-        hint_2: 'Spin the drums to spell: E, I, G, H, T.',
-        config: {
-          answer: ['E', 'I', 'G', 'H', 'T'],
-          scramble: ['A', 'B', 'C', 'D', 'F'],
-          solvedMessage: 'Eight corners. Chuckles checked every single one. No basket.',
-        },
-      },
-    ],
-  },
+  // Stage 2 — TODO: puzzle TBD
+  // Answer: 8 (4 corners x 2 checks)
+  2: { storyPool: [], geoPool: [] },
 
-  // Stage 3 — Answer: PORRIDGE (anagram of LAPORGE)
-  3: {
-    storyPool: [
-      {
-        iframeSrc: '/puzzles/fuse-box.html',
-        buttonLabel: 'Check the fuse panel',
-        hint_1: 'It is an anagram of his own name.',
-        hint_2: 'Restore letters in order: P, O, R, I, D, G, E.',
-        config: {
-          fuses: ['P', 'O', 'R', 'I', 'D', 'G', 'E', 'X'],
-          answer: ['P', 'O', 'R', 'I', 'D', 'G', 'E'],
-          solvedMessage: 'Porridge. That is what he claims he was carrying. The chocolate on his face suggests otherwise.',
-        },
-      },
-    ],
-    geoPool: [
-      {
-        iframeSrc: '/puzzles/letter-drums.html',
-        buttonLabel: 'Search the loading dock',
-        hint_1: 'It is an anagram of his own name.',
-        hint_2: 'Spin the drums to spell: P, O, R, R, I, D, G, E.',
-        config: {
-          answer: ['P', 'O', 'R', 'R', 'I', 'D', 'G', 'E'],
-          scramble: ['L', 'A', 'P', 'O', 'R', 'G', 'E', 'X'],
-          solvedMessage: 'That is what he said. Though I notice he has chocolate on his face.',
-        },
-      },
-    ],
-  },
+  // Stage 3 — TODO: puzzle TBD
+  // Answer: PORRIDGE (anagram)
+  3: { storyPool: [], geoPool: [] },
 
-  // Stage 4 — Answer: 34310 (47 x 365 x 2)
-  4: {
-    storyPool: [
-      {
-        iframeSrc: '/puzzles/number-dials.html',
-        buttonLabel: 'Check the nap log',
-        hint_1: '47 years times 365 days times 2 naps.',
-        hint_2: '47 x 365 x 2.',
-        config: {
-          answer: [3, 4, 3, 1, 0],
-          scramble: [7, 2, 8, 5, 1],
-          solvedMessage: '34,310 naps. He seemed proud of this.',
-        },
-      },
-    ],
-    geoPool: [
-      {
-        iframeSrc: '/puzzles/number-dials.html',
-        buttonLabel: 'Inspect the timesheet',
-        hint_1: '47 years times 365 days times 2 naps.',
-        hint_2: '47 x 365 x 2.',
-        config: {
-          answer: [3, 4, 3, 1, 0],
-          scramble: [0, 9, 1, 6, 4],
-          solvedMessage: '34,310 naps. He had the number memorised. That tells you something.',
-        },
-      },
-    ],
-  },
+  // Stage 4 — TODO: puzzle TBD
+  // Answer: 34310 (47 x 365 x 2)
+  4: { storyPool: [], geoPool: [] },
 
-  // Stage 5 — Answer: 2 red, 0 blue, 2 yellow (Southport Gold)
-  5: {
-    storyPool: [
-      {
-        iframeSrc: '/puzzles/potion-mixer.html',
-        buttonLabel: 'Mix the Southport Gold',
-        hint_1: 'Orange is made from red and yellow in equal parts. No blue.',
-        hint_2: 'Two drops red, zero blue, two drops yellow.',
-        config: {
-          maxDrops: 4,
-          answer: { R: 2, B: 0, Y: 2 },
-          target: { color: '#c87020', label: 'Southport Gold ... equal red and yellow, no blue' },
-          solvedMessage: 'Southport Gold. Two parts red, zero blue, two parts yellow. The colour of a Southport sunrise.',
-        },
-      },
-    ],
-    geoPool: [
-      {
-        iframeSrc: '/puzzles/number-dials.html',
-        buttonLabel: 'Find the dye formula',
-        hint_1: 'Red, Blue, Yellow in that order. Orange needs no blue.',
-        hint_2: 'Two red, zero blue, two yellow.',
-        config: {
-          answer: [2, 0, 2],
-          scramble: [5, 3, 7],
-          solvedMessage: 'Two red, zero blue, two yellow. The formula checks out.',
-        },
-      },
-    ],
-  },
+  // Stage 5 — TODO: puzzle TBD
+  // Answer: 2 red, 0 blue, 2 yellow (Southport Gold dye formula)
+  5: { storyPool: [], geoPool: [] },
 
-  // Stage 6 — Answer: 375 (minutes from midnight to 6:15am)
-  6: {
-    storyPool: [
-      {
-        iframeSrc: '/puzzles/number-dials.html',
-        buttonLabel: 'Calculate the gap',
-        hint_1: 'Convert 6 hours 15 minutes to minutes.',
-        hint_2: '6 multiplied by 60 plus 15.',
-        config: {
-          answer: [3, 7, 5],
-          scramble: [1, 2, 0],
-          solvedMessage: '375 minutes. Long enough to hide something. Or eat something.',
-        },
-      },
-    ],
-    geoPool: [
-      {
-        iframeSrc: '/puzzles/number-dials.html',
-        buttonLabel: 'Check the security log',
-        hint_1: 'Convert 6 hours 15 minutes to minutes.',
-        hint_2: '6 multiplied by 60 plus 15.',
-        config: {
-          answer: [3, 7, 5],
-          scramble: [8, 0, 4],
-          solvedMessage: '375 minutes unaccounted for. Chuckles had plenty of time.',
-        },
-      },
-    ],
-  },
+  // Stage 6 — TODO: puzzle TBD
+  // Answer: 375 (minutes from midnight to 6:15am)
+  6: { storyPool: [], geoPool: [] },
 
-  // Stage 7 — Answer: COLD HEAT LIGHT FANS DOOR ALARM (circuit restore sequence)
-  7: {
-    storyPool: [
-      {
-        iframeSrc: '/puzzles/fuse-box.html',
-        buttonLabel: 'Restore the circuit board',
-        hint_1: 'Cold storage first, then heat, then light.',
-        hint_2: 'COLD then HEAT then LIGHT then FANS then DOOR then ALARM.',
-        config: {
-          fuses: ['COLD', 'HEAT', 'LIGHT', 'FANS', 'DOOR', 'ALARM'],
-          answer: ['COLD', 'HEAT', 'LIGHT', 'FANS', 'DOOR', 'ALARM'],
-          solvedMessage: 'All six circuits online. The cold room is running. Whatever was in there is still cold.',
-        },
-      },
-    ],
-    geoPool: [
-      {
-        iframeSrc: '/puzzles/letter-drums.html',
-        buttonLabel: 'Find the breaker box',
-        hint_1: 'First letters of each circuit in order.',
-        hint_2: 'Spin the drums to spell: C, H, L, F, D, A.',
-        config: {
-          answer: ['C', 'H', 'L', 'F', 'D', 'A'],
-          scramble: ['X', 'B', 'Q', 'M', 'Z', 'P'],
-          solvedMessage: 'Cold, Heat, Light, Fans, Door, Alarm. Power restored.',
-        },
-      },
-    ],
-  },
+  // Stage 7 — TODO: puzzle TBD
+  // Answer: COLD HEAT LIGHT FANS DOOR ALARM
+  7: { storyPool: [], geoPool: [] },
 
-  // Stage 8 — Answer: 8 (8pm, one hour after 7pm cake pickup)
-  8: {
-    storyPool: [
-      {
-        iframeSrc: '/puzzles/number-dials.html',
-        buttonLabel: 'Check the delivery log',
-        hint_1: 'Add one hour to 7pm.',
-        hint_2: '7pm plus 60 minutes equals 8pm.',
-        config: {
-          answer: [8],
-          scramble: [2],
-          solvedMessage: '8pm. Packing started. And the basket was already gone.',
-        },
-      },
-    ],
-    geoPool: [
-      {
-        iframeSrc: '/puzzles/letter-drums.html',
-        buttonLabel: 'Find the loading slip',
-        hint_1: 'Add one hour to 7pm. Spell out the hour.',
-        hint_2: 'Spin the drums to spell: E, I, G, H, T.',
-        config: {
-          answer: ['E', 'I', 'G', 'H', 'T'],
-          scramble: ['A', 'C', 'M', 'P', 'X'],
-          solvedMessage: 'Eight. 8pm. Packing started and the basket was already gone.',
-        },
-      },
-    ],
-  },
+  // Stage 8 — TODO: puzzle TBD
+  // Answer: 8pm (cake collected at 7pm, packing started one hour later)
+  8: { storyPool: [], geoPool: [] },
 
-  // Stage 9 — Answer: 2025 (year 25 plus 2000 years)
-  9: {
-    storyPool: [
-      {
-        iframeSrc: '/puzzles/number-dials.html',
-        buttonLabel: 'Check the year register',
-        hint_1: 'Add 2000 to the year he started.',
-        hint_2: '25 plus 2000.',
-        config: {
-          answer: [2, 0, 2, 5],
-          scramble: [9, 3, 6, 1],
-          solvedMessage: '2025. And still no basket. This has been the worst year of my career.',
-        },
-      },
-    ],
-    geoPool: [
-      {
-        iframeSrc: '/puzzles/number-dials.html',
-        buttonLabel: 'Find the date stamp',
-        hint_1: 'Add 2000 to the year he started.',
-        hint_2: '25 plus 2000.',
-        config: {
-          answer: [2, 0, 2, 5],
-          scramble: [5, 8, 0, 3],
-          solvedMessage: 'Two thousand and twenty five years of this job. Never lost a basket. Until now.',
-        },
-      },
-    ],
-  },
+  // Stage 9 — TODO: puzzle TBD
+  // Answer: 2025
+  9: { storyPool: [], geoPool: [] },
 
 }
 
