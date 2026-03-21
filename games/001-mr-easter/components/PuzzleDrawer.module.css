@@ -1,0 +1,267 @@
+/* PuzzleDrawer.module.css */
+/* Puzzle drawer — slides up from bottom above the fixed input bar */
+
+/* ─── Trigger button ─── */
+/* Sits in the feed flow, above the fixed input bar */
+
+.triggerBtn {
+  container-type: inline-size;
+  container-name: triggerbtn;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  background: var(--bg3);
+  border: 0.5px solid var(--border2);
+  border-radius: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  text-align: left;
+}
+
+.triggerBtn:hover { background: var(--bg4); border-color: var(--accent-border); }
+
+.triggerIcon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.triggerLabel {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  flex: 1;
+}
+
+.triggerCounter {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ─── Fly animation ─── */
+
+.flyEmoji {
+  position: fixed;
+  bottom: 80px;
+  right: 24px;
+  font-size: 28px;
+  z-index: 300;
+  animation: flyToBag 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+}
+
+@keyframes flyToBag {
+  0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+  60%  { transform: translate(20px, -120px) scale(0.8); opacity: 0.9; }
+  100% { transform: translate(60px, -240px) scale(0.3); opacity: 0; }
+}
+
+/* ─── Drawer overlay ─── */
+/* Constrained between the fixed game header (top) and fixed input bar (bottom) */
+
+.drawerOverlay {
+  position: fixed;
+  top: var(--drawer-top, 120px); /* nav 56px + gameHeader 64px */
+  left: 0;
+  right: 0;
+  bottom: var(--drawer-bottom, 110px); /* clears fixed input/puzzle button bar */
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* ─── Drawer panel ─── */
+
+.drawer {
+  container-type: inline-size;
+  container-name: puzzledrawer;
+  background: var(--bg2);
+  border-top: 0.5px solid var(--border2);
+  border-radius: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUp 0.28s cubic-bezier(0.34, 1.2, 0.64, 1) both;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* ─── Drawer header ─── */
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--bg3);
+  flex-shrink: 0;
+}
+
+.drawerMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.drawerTitle {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.drawerCounter {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+
+.drawerClose {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+  line-height: 1;
+}
+.drawerClose:hover { color: var(--text); background: var(--bg4); }
+
+/* ─── Drawer content ─── */
+
+.drawerContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.noPuzzle {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  padding: 40px 0;
+}
+
+/* ─── Header actions (hint + close) ─── */
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.hintBtn {
+  background: var(--accent-dim);
+  border: 0.5px solid var(--accent-border);
+  border-radius: 8px;
+  color: var(--accent-light);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.hintBtn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--bg4);
+  border: 0.5px solid var(--border2);
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.closeBtn:hover { color: var(--text); background: var(--bg3); }
+
+/* ─── Hint bubbles ─── */
+
+.hintList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 20px 0;
+  flex-shrink: 0;
+}
+
+.hintBubble {
+  background: var(--accent-dim);
+  border: 0.5px solid var(--accent-border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent-light);
+  line-height: 1.5;
+  letter-spacing: 0.3px;
+}
+
+/* ─── Puzzle content area ─── */
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
+}
+
+
+
+/* ─── Puzzle iframe ─── */
+
+.puzzleIframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  background: transparent;
+}
+
+
+
+@container drawer (min-width: 400px) {
+  .drawerHeader { padding: 18px 28px; }
+  .drawerContent { padding: 24px 28px; }
+  .drawerTitle { font-size: 13px; }
+  .drawerCounter { font-size: 11px; }
+}
+
+@container triggerbtn (min-width: 400px) {
+  .triggerLabel { font-size: 13px; }
+  .triggerCounter { font-size: 11px; }
+}
