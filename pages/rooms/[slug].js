@@ -25,6 +25,7 @@ export default function RoomPage({ roomSlug, gameId }) {
   const [gameOver, setGameOver] = useState(false)
   const [gameComplete, setGameComplete] = useState(false)
   const [startedAt, setStartedAt] = useState(null)
+  const [puzzleMasks, setPuzzleMasks] = useState({})
 
   // Session
   const [sessionId, setSessionId] = useState(null)
@@ -79,6 +80,7 @@ export default function RoomPage({ roomSlug, gameId }) {
         setSeconds(data.elapsedSeconds)
         setTimerActive(true)
         if (data.progressData) setProgress(data.progressData)
+        if (data.puzzleMasks) setPuzzleMasks(data.puzzleMasks)
       })
       .catch(() => {})
   }, [router.query])
@@ -402,6 +404,7 @@ export default function RoomPage({ roomSlug, gameId }) {
                 sessionId={sessionId}
                 puzzlesSolved={puzzlesSolvedThisStage}
                 puzzlesTotal={puzzlesTotal}
+                initialPuzzleMask={puzzleMasks[activePuzzle.stage] || 0}
               />
             )}
 
