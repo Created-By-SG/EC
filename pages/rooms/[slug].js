@@ -1,31 +1,28 @@
 // pages/rooms/[slug].js
-
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import PuzzleCard from '../../games/001-mr-easter/components/PuzzleCard'
 import GameHeader from '../../games/001-mr-easter/components/GameHeader'
 import InventoryPanel from '../../games/001-mr-easter/components/InventoryPanel'
 import StageLog from '../../games/001-mr-easter/components/StageLog'
+import PuzzleDrawer from '../../games/001-mr-easter/components/PuzzleDrawer'
 import { ITEMS } from '../../games/001-mr-easter/items/index'
 import { DEV_MODE } from '../../lib/devConfig'
 import { useGameNav } from '../../lib/GameNavContext'
 import styles from '../../games/001-mr-easter/styles/Room.module.css'
-
-const GAME_DURATION = 2 * 60 * 60
 
 export default function RoomPage({ roomSlug, gameId }) {
   const router = useRouter()
   const [puzzles, setPuzzles] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const GAME_DURATION = 2 * 60 * 60
   const [seconds, setSeconds] = useState(0)
   const [timerActive, setTimerActive] = useState(false)
   const [progress, setProgress] = useState({})
   const [gameOver, setGameOver] = useState(false)
-  const [gameComplete, setGameComplete] = useState(false)
   const [startedAt, setStartedAt] = useState(null)
-  const [puzzleMasks, setPuzzleMasks] = useState({})
 
   // Session
   const [sessionId, setSessionId] = useState(null)
@@ -37,15 +34,23 @@ export default function RoomPage({ roomSlug, gameId }) {
   const [starting, setStarting] = useState(false)
   const [copied, setCopied] = useState(false)
 
+  // Leaderboard
+  const [leaderboard, setLeaderboard] = useState([])
+
   // Panels
   const [bagOpen, setBagOpen] = useState(false)
   const [logOpen, setLogOpen] = useState(false)
+  const openPuzzlePanelRef = useRef(null)
 
-  // Puzzle counter per stage
+  // Puzzle drawer counter (resets per stage)
   const [puzzleSolvedCount, setPuzzleSolvedCount] = useState(0)
+
+  // Track the answer given for each solved stage (for log replay)
   const [solvedAnswers, setSolvedAnswers] = useState({})
+
+  // Track puzzles solved per stage (resets when stage advances)
   const [puzzlesSolvedThisStage, setPuzzlesSolvedThisStage] = useState(0)
-  const puzzlesTotal = 2
+  const puzzlesTotal = 2 // story + geo per stage
 
   const { setGameNav } = useGameNav()
 
@@ -64,15 +69,18 @@ export default function RoomPage({ roomSlug, gameId }) {
     return `${h}:${m}:${ss}`
   }
 
-  // On mount — check for ?s=sessionId in URL and resume from Supabase
+  // On mount — check for ?s=sessionId in URL and resume from Supabase if present
   useEffect(() => {
     const { s } = router.query
     if (!s) return
     fetch(`/api/resume-session?sessionId=${s}`)
       .then(r => r.json())
       .then(data => {
-        if (data.error) return
-        if (data.expired) { setGameOver(true); return }
+        if (data.error) return // invalid session — fall through to name entry
+        if (data.expired) {
+          setGameOver(true)
+          return
+        }
         setSessionId(data.sessionId)
         setShareToken(data.shareToken)
         setTeamName(data.teamName)
@@ -80,12 +88,11 @@ export default function RoomPage({ roomSlug, gameId }) {
         setSeconds(data.elapsedSeconds)
         setTimerActive(true)
         if (data.progressData) setProgress(data.progressData)
-        if (data.puzzleMasks) setPuzzleMasks(data.puzzleMasks)
       })
-      .catch(() => {})
+      .catch(() => {}) // fail silently — name entry screen shows
   }, [router.query])
 
-  // Timer — driven by startedAt so it survives tab closes
+  // Timer — calculates elapsed from startedAt (server timestamp) so it survives browser closes
   useEffect(() => {
     if (!timerActive || !startedAt) return
     const tick = () => {
@@ -96,12 +103,11 @@ export default function RoomPage({ roomSlug, gameId }) {
         setGameOver(true)
       }
     }
-    tick()
+    tick() // run immediately on mount
     const t = setInterval(tick, 1000)
     return () => clearInterval(t)
   }, [timerActive, startedAt])
 
-  // Load puzzles
   useEffect(() => {
     fetch(`/api/puzzles?game=${gameId}`)
       .then(r => r.json())
@@ -109,15 +115,25 @@ export default function RoomPage({ roomSlug, gameId }) {
       .catch(() => { setError('Failed to load puzzles'); setLoading(false) })
   }, [])
 
+  useEffect(() => {
+    if (!sessionId) return
+    fetchLeaderboard()
+    const interval = setInterval(fetchLeaderboard, 30_000)
+    return () => clearInterval(interval)
+  }, [sessionId, roomSlug])
+
   // Reset puzzle counter when stage changes
   const activeStageId = puzzles.find(p =>
     progress[p.stage] === 'active' || progress[p.stage] === 'location_verified'
   )?.stage
   useEffect(() => { setPuzzleSolvedCount(0) }, [activeStageId])
 
-  // Push timer + pips to nav
+  // Keep elapsed seconds updating in nav — timer now driven by startedAt useEffect above
+
+  // Push timer + pips to nav — bag is now in GameHeader, not nav
   useEffect(() => {
     if (!sessionId) { setGameNav(null); return }
+
     const pips = puzzles.map(p => (
       <div key={p.stage} className={[
         styles.pip,
@@ -125,6 +141,7 @@ export default function RoomPage({ roomSlug, gameId }) {
         progress[p.stage] === 'active' || progress[p.stage] === 'location_verified' ? styles.pipActive : '',
       ].filter(Boolean).join(' ')} />
     ))
+
     setGameNav({
       timer: formatTimeRemaining(seconds),
       pips,
@@ -134,12 +151,20 @@ export default function RoomPage({ roomSlug, gameId }) {
 
   useEffect(() => { return () => setGameNav(null) }, [])
 
+  async function fetchLeaderboard() {
+    try {
+      const res = await fetch(`/api/leaderboard?roomSlug=${roomSlug}`)
+      if (res.ok) setLeaderboard(await res.json())
+    } catch {}
+  }
+
   async function startSession() {
+    
     if (!bookingCode.trim()) { setNameError('Enter your booking code'); return }
     setStarting(true)
     setNameError('')
     try {
-      // 1. Validate booking code
+      // 1. Validate booking code + email
       const validateRes = await fetch('/api/validate-booking', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -148,9 +173,10 @@ export default function RoomPage({ roomSlug, gameId }) {
       const validateData = await validateRes.json()
       if (!validateRes.ok) throw new Error(validateData.error)
 
+      // displayName is everything before the @ e.g. matt@gmail.com → matt
       const displayName = validateData.displayName
 
-      // 2. Start or resume session
+      // 2. Start session using display name
       const res = await fetch('/api/start-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -164,21 +190,13 @@ export default function RoomPage({ roomSlug, gameId }) {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-
       setSessionId(data.sessionId)
       setShareToken(data.shareToken)
       setTeamName(displayName)
       setStartedAt(data.startedAt)
-
-      // Resume existing progress or initialise fresh
-      if (data.resumed && data.progressData) {
-        setProgress(data.progressData)
-      } else {
-        const initial = {}
-        puzzles.forEach((p, i) => { initial[p.stage] = i === 0 ? 'active' : 'locked' })
-        setProgress(initial)
-      }
-
+      const initial = {}
+      puzzles.forEach((p, i) => { initial[p.stage] = i === 0 ? 'active' : 'locked' })
+      setProgress(initial)
       setTimerActive(true)
       router.replace({ query: { ...router.query, s: data.sessionId } }, undefined, { shallow: true })
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -186,56 +204,37 @@ export default function RoomPage({ roomSlug, gameId }) {
     finally { setStarting(false) }
   }
 
-  // Called when both puzzles in a stage are solved
   const handleSolved = useCallback(async (stage, answerGiven) => {
-    if (answerGiven) setSolvedAnswers(prev => ({ ...prev, [stage]: answerGiven }))
+    // Record the answer for the log
+    if (answerGiven) {
+      setSolvedAnswers(prev => ({ ...prev, [stage]: answerGiven }))
+    }
+    // Increment puzzle counter for this stage
     setPuzzlesSolvedThisStage(prev => prev + 1)
-
-    const idx = puzzles.findIndex(p => p.stage === stage)
-    const nextStage = puzzles[idx + 1]?.stage || null
-    const isLastStage = !nextStage
 
     setProgress(prev => {
       const updated = { ...prev, [stage]: 'solved' }
-      if (nextStage && updated[nextStage] === 'locked') updated[nextStage] = 'active'
+      const idx = puzzles.findIndex(p => p.stage === stage)
+      if (idx !== -1 && puzzles[idx + 1]) {
+        const next = puzzles[idx + 1].stage
+        if (updated[next] === 'locked') updated[next] = 'active'
+      }
       return updated
     })
 
     if (sessionId) {
+      const idx = puzzles.findIndex(p => p.stage === stage)
+      const nextStage = puzzles[idx + 1]?.stage || null
       try {
         await fetch('/api/solve-stage', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sessionId, stage, nextStage, elapsedSeconds: seconds }),
         })
+        fetchLeaderboard()
       } catch {}
-
-      // Last stage — write to leaderboard once
-      if (isLastStage) {
-        setGameComplete(true)
-        setTimerActive(false)
-        try {
-          await fetch('/api/complete-game', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionId, elapsedSeconds: seconds, roomSlug: gameId, teamName }),
-          })
-        } catch {}
-      }
     }
-  }, [puzzles, sessionId, seconds, teamName, gameId])
-
-  // Called on individual puzzle completion — saves progress
-  const handlePuzzleCompleted = useCallback(async () => {
-    if (!sessionId) return
-    try {
-      await fetch('/api/save-progress', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, elapsedSeconds: seconds }),
-      })
-    } catch {}
-  }, [sessionId, seconds])
+  }, [puzzles, sessionId, seconds])
 
   const handleHintUsed = useCallback(async (stage) => {
     if (!sessionId) return
@@ -249,7 +248,6 @@ export default function RoomPage({ roomSlug, gameId }) {
   }, [sessionId])
 
   const solvedCount = Object.values(progress).filter(v => v === 'solved').length
-
   const shareUrl = shareToken && typeof window !== 'undefined'
     ? `${window.location.origin}/watch/${shareToken}`
     : null
@@ -267,6 +265,7 @@ export default function RoomPage({ roomSlug, gameId }) {
     setSessionId(null)
     setShareToken(null)
     setTeamName('')
+    
     setBookingCode('')
     setNameError('')
     setProgress({})
@@ -274,7 +273,6 @@ export default function RoomPage({ roomSlug, gameId }) {
     setStartedAt(null)
     setTimerActive(false)
     setGameOver(false)
-    setGameComplete(false)
     setSolvedAnswers({})
     setPuzzleSolvedCount(0)
     setPuzzlesSolvedThisStage(0)
@@ -282,9 +280,19 @@ export default function RoomPage({ roomSlug, gameId }) {
     window.scrollTo({ top: 0 })
   }
 
+  // Only render the single active puzzle card
   const activePuzzle = puzzles.find(p =>
     progress[p.stage] === 'active' || progress[p.stage] === 'location_verified'
   )
+
+  const lbRows = (() => {
+    const me = { name: teamName || 'you', solved: solvedCount, time: formatTime(seconds), you: true }
+    const others = leaderboard
+      .filter(r => r.session_id !== sessionId)
+      .slice(0, 4)
+      .map(r => ({ name: r.team_name, solved: r.stages_solved, time: formatTime(r.elapsed_seconds) }))
+    return [...others, me].sort((a, b) => b.solved - a.solved || a.time.localeCompare(b.time))
+  })()
 
   return (
     <>
@@ -308,26 +316,7 @@ export default function RoomPage({ roomSlug, gameId }) {
         </div>
       )}
 
-      {/* Game complete */}
-      {gameComplete && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
-            <div className={styles.modalEyebrow}>Case closed</div>
-            <div className={styles.modalTitle}>You found the basket.</div>
-            <div className={styles.modalDivider} />
-            <div className={styles.modalMeta}>
-              Team: {teamName}<br />
-              Time: {formatTime(seconds)}<br />
-              Stages: {puzzles.length} of {puzzles.length}
-            </div>
-            <div className={styles.modalMeta} style={{ marginTop: 8 }}>
-              Your time has been saved to the leaderboard.
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Booking code entry modal */}
+      {/* Start game modal */}
       {!sessionId && !loading && !error && !gameOver && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
@@ -335,6 +324,7 @@ export default function RoomPage({ roomSlug, gameId }) {
             <div className={styles.modalTitle}>The Bunny Who Stole Easter</div>
             <div className={styles.modalMeta}>Gold Coast · Southport · 9 stages</div>
             <div className={styles.modalDivider} />
+
             <label className={styles.modalFieldLabel}>Booking code</label>
             <input
               className={styles.modalInput}
@@ -344,7 +334,6 @@ export default function RoomPage({ roomSlug, gameId }) {
               onKeyDown={e => e.key === 'Enter' && startSession()}
               autoCapitalize="characters"
               autoCorrect="off"
-              autoFocus
             />
             {nameError && <div className={styles.modalError}>{nameError}</div>}
             <button className={styles.modalBtn} onClick={startSession} disabled={starting}>
@@ -357,7 +346,7 @@ export default function RoomPage({ roomSlug, gameId }) {
         </div>
       )}
 
-      {/* Spectator share bar */}
+      {/* Spectator link - fixed between nav and GameHeader */}
       {sessionId && shareUrl && (
         <div className={styles.shareBar}>
           <span className={styles.shareLabel}>Spectator link</span>
@@ -373,47 +362,106 @@ export default function RoomPage({ roomSlug, gameId }) {
         </div>
       )}
 
-      {/* Game header */}
+      {/* Persistent game header — shifts down if spectator bar is visible */}
       {sessionId && (
         <GameHeader
           puzzles={puzzles}
           progress={progress}
-          puzzleMasks={puzzleMasks}
           puzzleCounter={activePuzzle ? `${puzzleSolvedCount}/1` : null}
           onBagOpen={() => setBagOpen(true)}
           onLogOpen={() => setLogOpen(true)}
+          onPuzzleOpen={() => openPuzzlePanelRef.current?.()}
           topOffset={shareUrl ? 40 : 0}
         />
       )}
 
-      {/* Feed */}
-      <div className={styles.feed} style={shareUrl ? { paddingTop: '180px' } : undefined}>
-        {loading && <div className={styles.stateMsg}>Loading…</div>}
-        {error && <div className={`${styles.stateMsg} ${styles.stateMsgError}`}>{error}</div>}
+      <div className={styles.layout}>
+        {/* Feed — single active stage only */}
+        <div className={styles.feed} style={shareUrl ? { paddingTop: '180px' } : undefined}>
+          {loading && <div className={styles.stateMsg}>Loading…</div>}
+          {error && <div className={`${styles.stateMsg} ${styles.stateMsgError}`}>{error}</div>}
 
-        {sessionId && (
-          <>
-            {activePuzzle && (
-              <PuzzleCard
-                key={activePuzzle.stage}
-                puzzle={activePuzzle}
-                status={progress[activePuzzle.stage] || 'active'}
-                onSolved={handleSolved}
-                onHintUsed={handleHintUsed}
-                onPuzzleCompleted={handlePuzzleCompleted}
-                gameName={gameId}
-                sessionId={sessionId}
-                puzzlesSolved={puzzlesSolvedThisStage}
-                puzzlesTotal={puzzlesTotal}
-                initialPuzzleMask={puzzleMasks[activePuzzle.stage] || 0}
-              />
-            )}
+          {sessionId && (
+            <>
+              {activePuzzle && (
+                <PuzzleCard
+                  key={activePuzzle.stage}
+                  puzzle={activePuzzle}
+                  status={progress[activePuzzle.stage] || 'active'}
+                  onSolved={handleSolved}
+                  onHintUsed={handleHintUsed}
+                  gameName={gameId}
+                  sessionId={sessionId}
+                  puzzlesSolved={puzzlesSolvedThisStage}
+                  puzzlesTotal={puzzlesTotal}
+                  headerOffset={shareUrl ? 160 : 120}
+                  onPuzzlePanelRef={fn => { openPuzzlePanelRef.current = fn }}
+                />
+              )}
 
-            {!activePuzzle && solvedCount === puzzles.length && puzzles.length > 0 && !gameComplete && (
-              <div className={styles.stateMsg}>🎉 All stages complete!</div>
-            )}
-          </>
-        )}
+              {!activePuzzle && solvedCount === puzzles.length && puzzles.length > 0 && (
+                <div className={styles.stateMsg}>
+                  🎉 All stages complete!
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Sidebar — desktop only */}
+        <div className={styles.sidebar}>
+          <div className={styles.sideSection}>
+            <div className={styles.sideLabel}>Room</div>
+            <div className={styles.roomName}>The Bunny Who Stole Easter</div>
+            <div className={styles.roomMeta}>Gold Coast · Southport</div>
+            <div className={styles.roomMeta}>9 stages · ~2 hrs</div>
+          </div>
+
+          {sessionId && (
+            <>
+              <div className={styles.sideSection}>
+                <div className={styles.sideLabel}>Progress</div>
+                <div className={styles.statGrid}>
+                  <div className={styles.stat}>
+                    <div className={styles.statVal}>{solvedCount}</div>
+                    <div className={styles.statKey}>Solved</div>
+                  </div>
+                  <div className={styles.stat}>
+                    <div className={styles.statVal}>{puzzles.length - solvedCount}</div>
+                    <div className={styles.statKey}>Remaining</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.sideSection}>
+                <div className={styles.sideLabel}>Leaderboard</div>
+                {lbRows.map((entry, i) => (
+                  <div key={entry.name} className={styles.lbRow}>
+                    <span className={[styles.lbRank, i === 0 ? styles.lbGold : ''].join(' ')}>{i + 1}</span>
+                    <span className={[styles.lbName, entry.you ? styles.lbYou : ''].join(' ')}>
+                      {entry.you ? `${entry.name} ←` : entry.name}
+                    </span>
+                    <span className={styles.lbSolved}>{entry.solved}/{puzzles.length}</span>
+                    <span className={styles.lbTime}>{entry.time}</span>
+                  </div>
+                ))}
+              </div>
+
+              {shareUrl && (
+                <div className={styles.sideSection}>
+                  <div className={styles.sideLabel}>Share</div>
+                  <div className={styles.sideShareBox}>
+                    <div className={styles.sideShareDesc}>Send this to spectators watching from home</div>
+                    <div className={styles.sideShareUrl}>{shareUrl}</div>
+                    <button className={styles.sideShareBtn} onClick={copyShare}>
+                      {copied ? 'Copied!' : 'Copy link'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       <InventoryPanel
