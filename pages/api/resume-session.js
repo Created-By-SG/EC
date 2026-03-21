@@ -56,6 +56,7 @@ export default async function handler(req, res) {
   if (stageRows) {
     stageRows.forEach(row => {
       progressData[row.stage] = row.status
+      // mask lower byte = storyIndex, bit 8 = geo done
       if (row.puzzle_index != null) puzzleMasks[row.stage] = row.puzzle_index
     })
   }
