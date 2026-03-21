@@ -16,8 +16,9 @@ export default function PuzzleDrawer({
   puzzlesSolved,
   puzzlesTotal,
   onPuzzleSolved,
-  headerOffset = 120,
+  headerOffset = 56,
   inputOffset  = 0,
+  onSubmitReady,   // callback(submitFn) — gives parent a way to trigger submit
 }) {
   const [flyActive, setFlyActive] = useState(false)
   const [hintIndex, setHintIndex] = useState(0)
@@ -69,6 +70,21 @@ export default function PuzzleDrawer({
     }
     window.addEventListener('message', handleMessage)
     return () => window.removeEventListener('message', handleMessage)
+  }, [isOpen, chainStep])
+
+  // Called by parent context bar button
+  function submitPuzzle() {
+    if (iframeRef.current) {
+      iframeRef.current.contentWindow.postMessage({ type: 'PUZZLE_SUBMIT' }, '*')
+    } else {
+      // React component puzzle — call handleSolve directly (component handles own validation)
+      handleSolve()
+    }
+  }
+
+  // Expose submitPuzzle to parent whenever drawer opens or step changes
+  useEffect(() => {
+    if (isOpen && onSubmitReady) onSubmitReady(submitPuzzle)
   }, [isOpen, chainStep])
 
   function handleSolve() {

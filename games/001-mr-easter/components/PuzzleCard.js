@@ -63,6 +63,7 @@ export default function PuzzleCard({
   const [showButtons, setShowButtons] = useState(DEV_MODE ? status === 'active' : false)
   const [isOpen, setIsOpen]         = useState(status !== 'locked')
   const [activeDrawer, setActiveDrawer] = useState(null) // 'story' | 'geo' | null
+  const [submitFn, setSubmitFn] = useState(null)          // fn provided by active PuzzleDrawer
   const [storyPuzzleSolved, setStoryPuzzleSolved] = useState(false)
   const [geoPuzzleSolved, setGeoPuzzleSolved]     = useState(false)
 
@@ -238,37 +239,46 @@ export default function PuzzleCard({
         <div ref={bottomRef} />
       </div>
 
-      {/* Single action button — label and behaviour computed from state */}
-      {status !== 'solved' && showButtons && (() => {
-        // Compute label, icon, handler, style from current state
-        let label, icon, handler, extraClass = ''
-
-        if (activeDrawer === 'story') {
-          icon = '📄'; label = storyPuzzle?.buttonLabel; handler = () => setActiveDrawer(null); extraClass = styles.puzzleBtnActive
-        } else if (activeDrawer === 'geo') {
-          icon = '🗺'; label = geoPuzzle?.buttonLabel;  handler = () => setActiveDrawer(null); extraClass = styles.puzzleBtnActive
-        } else if (storyPuzzle && !storyPuzzleSolved) {
-          icon = '🔍'; label = storyPuzzle.buttonLabel; handler = () => setActiveDrawer('story')
-        } else if (geoPuzzle && !geoPuzzleSolved) {
-          icon = '🗺'; label = geoPuzzle.buttonLabel;   handler = () => setActiveDrawer('geo')
-        } else if (storyPuzzle && storyPuzzleSolved && !geoPuzzle) {
-          icon = '✓';  label = storyPuzzle.buttonLabel; handler = null; extraClass = styles.puzzleBtnSolved
-        } else {
-          return null
-        }
-
-        return (
-          <div className={styles.inputArea}>
+      {/* ── Context bar — dynamic based on game state ── */}
+      {status !== 'solved' && showButtons && (
+        <div className={styles.inputArea}>
+          {activeDrawer ? (
+            // Drawer open — submit button fires into the iframe
             <button
-              className={`${styles.puzzleBtn} ${extraClass}`}
-              onClick={handler || undefined}
-              disabled={!handler}
+              className={styles.submitBtn}
+              onClick={() => submitFn && submitFn()}
             >
-              {icon} {label}
+              {activeDrawer === 'story'
+                ? (storyPuzzle?.submitLabel || 'Submit')
+                : (geoPuzzle?.submitLabel  || 'Submit')}
             </button>
-          </div>
-        )
-      })()}
+          ) : (
+            // Drawer closed — puzzle entry buttons
+            <div className={styles.puzzleButtons}>
+              {storyPuzzle && (
+                <button
+                  className={`${styles.puzzleBtn} ${storyPuzzleSolved ? styles.puzzleBtnSolved : ''}`}
+                  onClick={() => !storyPuzzleSolved && setActiveDrawer('story')}
+                  disabled={storyPuzzleSolved}
+                >
+                  {storyPuzzleSolved ? '✓ ' : '🔍 '}
+                  {storyPuzzle.buttonLabel}
+                </button>
+              )}
+              {geoPuzzle && (
+                <button
+                  className={`${styles.puzzleBtn} ${geoPuzzleSolved ? styles.puzzleBtnSolved : ''}`}
+                  onClick={() => !geoPuzzleSolved && setActiveDrawer('geo')}
+                  disabled={geoPuzzleSolved}
+                >
+                  {geoPuzzleSolved ? '✓ ' : '🗺 '}
+                  {geoPuzzle.buttonLabel}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Story puzzle drawer */}
       {storyPuzzle && (
@@ -282,6 +292,7 @@ export default function PuzzleCard({
           puzzlesTotal={puzzlesTotal}
           headerOffset={headerOffset}
           inputOffset={80}
+          onSubmitReady={fn => setSubmitFn(() => fn)}
           onPuzzleSolved={() => {
             setActiveDrawer(null)
             handlePuzzleSolved('story')
@@ -301,6 +312,7 @@ export default function PuzzleCard({
           puzzlesTotal={puzzlesTotal}
           headerOffset={headerOffset}
           inputOffset={80}
+          onSubmitReady={fn => setSubmitFn(() => fn)}
           onPuzzleSolved={() => {
             setActiveDrawer(null)
             handlePuzzleSolved('geo')

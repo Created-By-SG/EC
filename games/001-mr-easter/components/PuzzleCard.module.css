@@ -675,3 +675,21 @@
   color: rgba(245, 158, 11, 0.6);
   flex-shrink: 0;
 }
+
+/* ── Submit button (drawer open state) ── */
+.submitBtn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.submitBtn:hover { background: #2563EB; }
