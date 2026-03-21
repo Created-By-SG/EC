@@ -43,18 +43,7 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 /* Tappable neighbours highlight */
 .maze-cell.reachable{border:1px solid rgba(59,130,246,0.35);}
 
-.bottom-row{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:320px;gap:8px;}
-
-.move-counter{font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:1px;}
-
-.reset-btn{
-  padding:7px 14px;background:transparent;
-  border:1px solid var(--border2);border-radius:6px;
-  color:var(--muted);font-family:var(--font-mono);font-size:10px;
-  letter-spacing:1px;text-transform:uppercase;cursor:pointer;
-  transition:all 0.15s;white-space:nowrap;
-}
-.reset-btn:hover{color:var(--text);border-color:rgba(255,255,255,0.2);}
+.move-counter{font-family:var(--font-mono);font-size:10px;color:var(--muted);letter-spacing:1px;text-align:center;}
 
 .feedback{font-family:var(--font-mono);font-size:11px;text-align:center;min-height:14px;color:var(--muted);}
 .feedback.err{color:var(--red);}
@@ -72,16 +61,11 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 </head>
 <body>
 
-<div class="hint-text">Navigate ● to ★. Tap an adjacent cell to move.<br><strong>Check the map item in your sack.</strong></div>
-
 <div class="maze-wrap">
   <div class="maze-grid" id="mazeGrid"></div>
 </div>
 
-<div class="bottom-row">
-  <span class="move-counter" id="moveCounter">Moves: 0</span>
-  <button class="reset-btn" onclick="resetMaze()">Reset</button>
-</div>
+<span class="move-counter" id="moveCounter">Moves: 0</span>
 
 <div class="feedback" id="feedback"></div>
 
