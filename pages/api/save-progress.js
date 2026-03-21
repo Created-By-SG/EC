@@ -19,7 +19,8 @@ export default async function handler(req, res) {
     .update({ last_saved_seconds: elapsedSeconds })
     .eq('id', sessionId)
 
-  if (error) console.error('save-progress error:', error)
+  if (error) console.error('[save-progress] session update error:', error)
+  else console.log(`[save-progress] session ${sessionId} updated, elapsed=${elapsedSeconds}`)
 
   // Persist sub-puzzle completion bitmask if provided
   if (stage != null && puzzleMask != null) {
@@ -29,7 +30,8 @@ export default async function handler(req, res) {
       .eq('session_id', sessionId)
       .eq('stage', stage)
 
-    if (maskError) console.error('puzzle_index save error:', maskError)
+    if (maskError) console.error('[save-progress] puzzle_index error:', maskError)
+    else console.log(`[save-progress] stage ${stage} mask=${puzzleMask} saved`)
   }
 
   return res.status(200).json({ ok: true })

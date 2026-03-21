@@ -34,9 +34,10 @@ export default async function handler(req, res) {
     .eq('stage', stage)
 
   if (solveError) {
-    console.error('solve error:', solveError)
+    console.error('[solve-stage] solve error:', solveError)
     return res.status(500).json({ error: 'Failed to solve stage' })
   }
+  console.log(`[solve-stage] stage ${stage} solved for session ${sessionId}`)
 
   // 3. Unlock next stage with a randomly assigned puzzle_index
   if (nextStage) {
