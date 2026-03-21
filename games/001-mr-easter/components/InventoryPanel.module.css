@@ -693,3 +693,181 @@
   padding: 2px 6px;
   letter-spacing: 1px;
 }
+
+/* ─── Header tabs ─── */
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tabRow {
+  display: flex;
+  gap: 4px;
+}
+
+.tab {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 0.5px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tab:hover { color: var(--text); background: var(--bg4); }
+.tabActive {
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+  color: var(--accent-light);
+}
+
+/* ─── Merge tab ─── */
+
+.mergeTab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 20px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.mergeHint {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  text-align: center;
+  opacity: 0.7;
+}
+
+.mergeSlots {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.mergeSlot {
+  flex: 1;
+  min-height: 110px;
+  background: var(--bg3);
+  border: 1px dashed rgba(59,130,246,0.25);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  padding: 12px 8px;
+}
+.mergeSlot:hover:not(:disabled) {
+  border-color: var(--accent-border);
+  background: var(--bg4);
+}
+.mergeSlotFilled {
+  border-style: solid;
+  border-color: var(--accent-border);
+  background: var(--bg4);
+}
+.mergeSlotDisabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.mergeSlotEmpty {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+}
+.mergeSlotEmoji { font-size: 26px; }
+.mergeSlotName {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.5px;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.mergePlus {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.mergeIncompat {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--red);
+  text-align: center;
+  opacity: 0.8;
+}
+
+.mergeBtn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+.mergeBtn:hover:not(:disabled) { background: #2563EB; }
+.mergeBtn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.usedCombos {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 0.5px solid var(--border);
+}
+.usedCombosLabel {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0.5;
+}
+.usedComboTag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--muted);
+  opacity: 0.4;
+}
+
+/* ─── Combine reveal additions ─── */
+
+.combineRevealMeta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted);
+  text-align: center;
+  opacity: 0.6;
+  margin-top: -8px;
+}
+
+.physicalCombineResult {
+  padding: 16px;
+}

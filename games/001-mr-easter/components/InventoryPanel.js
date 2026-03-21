@@ -248,31 +248,57 @@ function ItemThumb({ item, onSelect, isDragTarget, onDragStart, onDrop }) {
   )
 }
 
+// ─── Compatibility rules ─────────────────────────────────────────────────────
+// tool + tool = no
+// read + physical = no
+// tool + read = yes (if combinedWith matches)
+// tool + physical = yes (if combinedWith matches)
+// read + read = yes (if combinedWith matches)
+// physical + physical = yes (if combinedWith matches)
+
+function comboKey(a, b) {
+  return [a.id, b.id].sort().join('+')
+}
+
+function areTypesCompatible(a, b) {
+  const catA = getItemCategory(a.type)
+  const catB = getItemCategory(b.type)
+  if (catA === 'tool' && catB === 'tool') return false
+  if ((catA === 'read' && catB === 'physical') || (catA === 'physical' && catB === 'read')) return false
+  return true
+}
+
+function canCombine(a, b) {
+  if (!areTypesCompatible(a, b)) return false
+  return a.combinedWith === b.id || b.combinedWith === a.id
+}
+
 // ─── Main panel ───────────────────────────────────────────────────────────────
 
 export default function InventoryPanel({ sessionId, isOpen, onClose, allItemDefs }) {
-  const [items, setItems] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [selected, setSelected] = useState(null)
-  const [dragging, setDragging] = useState(null)
-  const [combinationResult, setCombinationResult] = useState(null)
+  const [items, setItems]           = useState([])
+  const [loading, setLoading]       = useState(false)
+  const [selected, setSelected]     = useState(null)
+  const [activeTab, setActiveTab]   = useState('items') // 'items' | 'merge'
+
+  // Merge state
+  const [slotA, setSlotA]           = useState(null)
+  const [slotB, setSlotB]           = useState(null)
+  const [pickingSlot, setPickingSlot] = useState(null) // 'A' | 'B' | null
+  const [usedCombos, setUsedCombos] = useState(new Set())
+  const [mergeResult, setMergeResult] = useState(null) // { item, partner, mechanic }
 
   useEffect(() => {
     if (!isOpen) return
-
-    // DEV MODE — show all items immediately without needing a solved stage
     if (DEV_MODE) {
       setItems(allItemDefs.filter(d => d.id))
       return
     }
-
     if (!sessionId) return
     setLoading(true)
     fetch(`/api/session-items?sessionId=${sessionId}`)
       .then(r => r.json())
       .then(data => {
-        // data is array of { item_id, stage_given }
-        // merge with full item definitions from allItemDefs
         const hydrated = (data || []).map(row => {
           const def = allItemDefs.find(d => d.id === row.item_id)
           return def ? { ...def, stage_given: row.stage_given } : null
@@ -283,124 +309,290 @@ export default function InventoryPanel({ sessionId, isOpen, onClose, allItemDefs
       .catch(() => setLoading(false))
   }, [isOpen, sessionId])
 
-  function handleDrop(targetItem) {
-    if (!dragging || dragging.id === targetItem.id) return
-    tryCombine(dragging, targetItem)
+  // Reset merge state when switching tabs
+  function switchTab(tab) {
+    setActiveTab(tab)
+    setSlotA(null)
+    setSlotB(null)
+    setPickingSlot(null)
+    setMergeResult(null)
   }
 
-  function tryCombine(a, b) {
-    // Check if either item combines with the other
-    const combo = (a.combinedWith === b.id) ? a
-                : (b.combinedWith === a.id) ? b
-                : null
-    if (!combo) {
-      setCombinationResult({ type: 'fail', message: 'These items don\'t seem to interact.' })
-      setTimeout(() => setCombinationResult(null), 2500)
-      return
-    }
-    const partner = combo.id === a.id ? b : a
-    setCombinationResult({ type: 'success', item: combo, partner, mechanic: combo.combinationMechanic })
+  // Items valid for slot A — anything that has at least one possible partner
+  function slotAItems() {
+    return items.filter(item =>
+      items.some(other => other.id !== item.id && canCombine(item, other) && !usedCombos.has(comboKey(item, other)))
+    )
+  }
+
+  // Items valid for slot B given slot A is chosen
+  function slotBItems() {
+    if (!slotA) return []
+    return items.filter(item =>
+      item.id !== slotA.id &&
+      canCombine(slotA, item) &&
+      !usedCombos.has(comboKey(slotA, item))
+    )
+  }
+
+  function handleMerge() {
+    if (!slotA || !slotB) return
+    const key = comboKey(slotA, slotB)
+    // Find which item carries the mechanic
+    const active = slotA.combinedWith === slotB.id ? slotA : slotB
+    const partner = active.id === slotA.id ? slotB : slotA
+    setUsedCombos(prev => new Set([...prev, key]))
+    setMergeResult({ item: active, partner, mechanic: active.combinationMechanic })
   }
 
   if (!isOpen) return null
+
+  // ── Merge picker overlay ──
+  if (pickingSlot) {
+    const pickerItems = pickingSlot === 'A' ? slotAItems() : slotBItems()
+    return (
+      <div className={styles.overlay} onClick={onClose}>
+        <div className={styles.panel} onClick={e => e.stopPropagation()}>
+          <div className={styles.panelHeader}>
+            <span className={styles.panelTitle}>
+              {pickingSlot === 'A' ? 'Choose first item' : 'Choose second item'}
+            </span>
+            <button className={styles.closeBtn} onClick={() => setPickingSlot(null)}>✕</button>
+          </div>
+          {pickerItems.length === 0 ? (
+            <div className={styles.emptyMsg}>
+              <p>No compatible items available.</p>
+            </div>
+          ) : (
+            <div className={styles.itemGrid}>
+              {pickerItems.map(item => (
+                <ItemThumb
+                  key={item.id}
+                  item={item}
+                  onSelect={picked => {
+                    if (pickingSlot === 'A') { setSlotA(picked); setSlotB(null) }
+                    else setSlotB(picked)
+                    setPickingSlot(null)
+                  }}
+                  isDragTarget={false}
+                  onDragStart={() => {}}
+                  onDrop={() => {}}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // ── Merge result reveal ──
+  if (mergeResult) {
+    return (
+      <div className={styles.overlay} onClick={onClose}>
+        <div className={styles.panel} onClick={e => e.stopPropagation()}>
+          <div className={styles.panelHeader}>
+            <span className={styles.panelTitle}>🎒 Kin Sack</span>
+            <button className={styles.closeBtn} onClick={onClose}>✕</button>
+          </div>
+          <div className={styles.combineReveal}>
+            <div className={styles.combineRevealTitle}>
+              {mergeResult.mechanic === 'uv'             && '🔦 UV Reveal'}
+              {mergeResult.mechanic === 'cipher_overlay' && '⚙️ Cipher Overlay'}
+              {mergeResult.mechanic === 'physical_fit'   && '🔩 Combined'}
+              {mergeResult.mechanic === 'combination_entry' && '🔐 Combination Lock'}
+              {!mergeResult.mechanic                     && '✓ Combined'}
+            </div>
+            <div className={styles.combineRevealMeta}>
+              {mergeResult.partner.name} + {mergeResult.item.name}
+            </div>
+            <div className={styles.combineRevealContent}>
+              {mergeResult.mechanic === 'uv'             && <UVReveal item={mergeResult.item} />}
+              {mergeResult.mechanic === 'cipher_overlay' && <CipherReveal item={mergeResult.item} />}
+              {(mergeResult.mechanic === 'physical_fit' || mergeResult.mechanic === 'combination_entry' || !mergeResult.mechanic) && (
+                <div className={styles.physicalCombineResult}>
+                  {renderItemContent(mergeResult.item)}
+                  <div className={styles.combineHint} style={{ marginTop: 12 }}>
+                    {mergeResult.mechanic === 'physical_fit'      && 'The two pieces fit together.'}
+                    {mergeResult.mechanic === 'combination_entry' && 'Use the sequence from this item on the lock.'}
+                    {!mergeResult.mechanic                        && 'These items are connected.'}
+                  </div>
+                </div>
+              )}
+            </div>
+            <button className={styles.backBtn} onClick={() => { setMergeResult(null); setSlotA(null); setSlotB(null) }}>
+              ← Back to merge
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.panel} onClick={e => e.stopPropagation()}>
 
-        {/* Panel header */}
+        {/* Panel header with tabs */}
         <div className={styles.panelHeader}>
-          <span className={styles.panelTitle}>🎒 Kin Sack</span>
+          <div className={styles.headerLeft}>
+            <span className={styles.panelTitle}>🎒 Kin Sack</span>
+            <div className={styles.tabRow}>
+              <button
+                className={`${styles.tab} ${activeTab === 'items' ? styles.tabActive : ''}`}
+                onClick={() => switchTab('items')}
+              >
+                Items
+              </button>
+              <button
+                className={`${styles.tab} ${activeTab === 'merge' ? styles.tabActive : ''}`}
+                onClick={() => switchTab('merge')}
+              >
+                Merge
+              </button>
+            </div>
+          </div>
           <button className={styles.closeBtn} onClick={onClose}>✕</button>
         </div>
 
-        {/* Combination result flash */}
-        {combinationResult && (
-          <div className={`${styles.comboResult} ${combinationResult.type === 'success' ? styles.comboSuccess : styles.comboFail}`}>
-            {combinationResult.type === 'success'
-              ? `✓ ${combinationResult.item.name} + ${combinationResult.partner.name} — combination triggered!`
-              : combinationResult.message}
-          </div>
-        )}
-
-        {loading && <div className={styles.loadingMsg}>Loading items…</div>}
-
-        {!loading && items.length === 0 && (
-          <div className={styles.emptyMsg}>
-            <span className={styles.emptyIcon}>🎒</span>
-            <p>Your Kin Sack is empty.</p>
-            <p className={styles.emptyHint}>Items will appear as you explore and solve stages.</p>
-          </div>
-        )}
-
-        {!loading && items.length > 0 && !selected && combinationResult?.type !== 'success' && (
+        {/* ── ITEMS TAB ── */}
+        {activeTab === 'items' && (
           <>
-            <p className={styles.bagHint}>Tap to inspect · Drag to combine · Items shared across your Kin</p>
-            <div className={styles.itemGrid}>
-              {items.map(item => (
-                <ItemThumb
-                  key={item.id}
-                  item={item}
-                  onSelect={setSelected}
-                  isDragTarget={dragging && dragging.id !== item.id}
-                  onDragStart={setDragging}
-                  onDrop={handleDrop}
-                />
-              ))}
-            </div>
+            {loading && <div className={styles.loadingMsg}>Loading items…</div>}
+
+            {!loading && items.length === 0 && (
+              <div className={styles.emptyMsg}>
+                <span className={styles.emptyIcon}>🎒</span>
+                <p>Your Kin Sack is empty.</p>
+                <p className={styles.emptyHint}>Items will appear as you explore and solve stages.</p>
+              </div>
+            )}
+
+            {!loading && items.length > 0 && !selected && (
+              <>
+                <p className={styles.bagHint}>Tap an item to inspect it</p>
+                <div className={styles.itemGrid}>
+                  {items.map(item => (
+                    <ItemThumb
+                      key={item.id}
+                      item={item}
+                      onSelect={setSelected}
+                      isDragTarget={false}
+                      onDragStart={() => {}}
+                      onDrop={() => {}}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+
+            {selected && (
+              <div className={styles.itemDetail}>
+                <div className={styles.detailHeader}>
+                  <div className={styles.detailName}>{selected.name}</div>
+                  <button className={styles.backBtn} onClick={() => setSelected(null)}>← Back</button>
+                </div>
+                <div className={styles.detailDesc}>{selected.description}</div>
+                {(selected.droppedBy || selected.source) && (
+                  <div className={styles.itemSource}>
+                    <span className={styles.itemSourceIcon}>
+                      {selected.source === 'character' ? '🧑' :
+                       selected.source === 'location'  ? '📍' :
+                       selected.source === 'puzzle'    ? '🧩' :
+                       selected.source === 'scene'     ? '🎬' : '🎒'}
+                    </span>
+                    {selected.droppedBy
+                      ? <span>Added by <strong>{selected.droppedBy}</strong></span>
+                      : <span>{selected.sourceLabel}</span>}
+                  </div>
+                )}
+                {renderItemContent(selected)}
+                {selected.combinedWith && (
+                  <div className={styles.combineHint}>
+                    💡 This item can be combined. Try the Merge tab.
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
 
-        {/* Full combination reveal */}
-        {combinationResult?.type === 'success' && (
-          <div className={styles.combineReveal}>
-            <div className={styles.combineRevealTitle}>
-              {combinationResult.mechanic === 'uv' && '🔦 UV reveal'}
-              {combinationResult.mechanic === 'cipher_overlay' && '⚙️ Cipher overlay'}
+        {/* ── MERGE TAB ── */}
+        {activeTab === 'merge' && (
+          <div className={styles.mergeTab}>
+            <p className={styles.mergeHint}>Select two compatible items to combine them.</p>
+
+            <div className={styles.mergeSlots}>
+              {/* Slot A */}
+              <button
+                className={`${styles.mergeSlot} ${slotA ? styles.mergeSlotFilled : ''}`}
+                onClick={() => setPickingSlot('A')}
+              >
+                {slotA ? (
+                  <>
+                    <span className={styles.mergeSlotEmoji}>
+                      {slotA.type === 'Physical_Key_001' ? '🗝️' :
+                       slotA.type === 'Physical_Ribbon_001' ? '🎀' :
+                       slotA.type?.startsWith('Readable_') ? '📄' :
+                       slotA.type?.startsWith('Tool_') ? '🔧' : '📦'}
+                    </span>
+                    <span className={styles.mergeSlotName}>{slotA.name}</span>
+                  </>
+                ) : (
+                  <span className={styles.mergeSlotEmpty}>+ Add item</span>
+                )}
+              </button>
+
+              <span className={styles.mergePlus}>+</span>
+
+              {/* Slot B */}
+              <button
+                className={`${styles.mergeSlot} ${slotB ? styles.mergeSlotFilled : ''} ${!slotA ? styles.mergeSlotDisabled : ''}`}
+                onClick={() => slotA && setPickingSlot('B')}
+                disabled={!slotA}
+              >
+                {slotB ? (
+                  <>
+                    <span className={styles.mergeSlotEmoji}>
+                      {slotB.type === 'Physical_Key_001' ? '🗝️' :
+                       slotB.type === 'Physical_Ribbon_001' ? '🎀' :
+                       slotB.type?.startsWith('Readable_') ? '📄' :
+                       slotB.type?.startsWith('Tool_') ? '🔧' : '📦'}
+                    </span>
+                    <span className={styles.mergeSlotName}>{slotB.name}</span>
+                  </>
+                ) : (
+                  <span className={styles.mergeSlotEmpty}>
+                    {slotA ? '+ Add item' : 'Choose first'}
+                  </span>
+                )}
+              </button>
             </div>
-            <div className={styles.combineRevealContent}>
-              {combinationResult.mechanic === 'uv' && (
-                <UVReveal item={combinationResult.item} />
-              )}
-              {combinationResult.mechanic === 'cipher_overlay' && (
-                <CipherReveal item={combinationResult.item} />
-              )}
-            </div>
-            <button className={styles.backBtn} onClick={() => { setCombinationResult(null); setDragging(null) }}>
-              ← Back to bag
+
+            {/* Incompatible warning */}
+            {slotA && slotB && !canCombine(slotA, slotB) && (
+              <div className={styles.mergeIncompat}>These items don't interact.</div>
+            )}
+
+            <button
+              className={styles.mergeBtn}
+              disabled={!slotA || !slotB || !canCombine(slotA, slotB)}
+              onClick={handleMerge}
+            >
+              Merge
             </button>
+
+            {usedCombos.size > 0 && (
+              <div className={styles.usedCombos}>
+                <span className={styles.usedCombosLabel}>Already combined</span>
+                {[...usedCombos].map(key => (
+                  <span key={key} className={styles.usedComboTag}>{key.replace('+', ' + ')}</span>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
-        {/* Item detail */}
-        {selected && !combinationResult && (
-          <div className={styles.itemDetail}>
-            <div className={styles.detailHeader}>
-              <div className={styles.detailName}>{selected.name}</div>
-              <button className={styles.backBtn} onClick={() => setSelected(null)}>← Back</button>
-            </div>
-            <div className={styles.detailDesc}>{selected.description}</div>
-            {(selected.droppedBy || selected.source) && (
-              <div className={styles.itemSource}>
-                <span className={styles.itemSourceIcon}>
-                  {selected.source === 'character' ? '🧑' :
-                   selected.source === 'location'  ? '📍' :
-                   selected.source === 'puzzle'    ? '🧩' :
-                   selected.source === 'scene'     ? '🎬' : '🎒'}
-                </span>
-                {selected.droppedBy
-                  ? <span>Added by <strong>{selected.droppedBy}</strong></span>
-                  : <span>{selected.sourceLabel}</span>}
-              </div>
-            )}
-            {renderItemContent(selected)}
-            {selected.combinedWith && (
-              <div className={styles.combineHint}>
-                💡 Can be combined with another item in your bag
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   )
