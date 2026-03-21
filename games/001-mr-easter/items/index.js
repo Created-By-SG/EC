@@ -42,6 +42,11 @@ import { item as pebblesLine }       from './Physical_Pebbles_Line_001'
 import { item as candyWrapper }      from './Physical_CandyWrapper_001'
 import { item as featherWhite }      from './Physical_Feather_White_001'
 
+// ─── Stage 1 — McGuffin (3 parts) ────────────────────────────────────────────
+import { item as knobBrass }         from './Physical_Knob_Brass_001'
+import { item as safeWall }          from './Physical_Safe_Wall_001'
+import { item as combinationSafe }   from './Readable_Combination_Safe_001'
+
 // ─── Shared tools ─────────────────────────────────────────────────────────────
 import { item as uvTorch }     from '../../../items/Tool_UVTorch_001'
 import { item as cipherWheel } from '../../../items/Tool_CipherWheel_001'
@@ -76,6 +81,10 @@ export const ITEMS = [
   // Red herrings
   { ...candyWrapper,      stage_given: '01' },
   { ...featherWhite,      stage_given: '01' },
+  // McGuffin — 3 parts, spread across stage 1
+  { ...knobBrass,         stage_given: '01' },
+  { ...safeWall,          stage_given: '01' },
+  { ...combinationSafe,   stage_given: '01' },
 
   // ── Stage 2 ──────────────────────────────────────────────────────────────
   { ...hqMemo,            stage_given: '02' },
