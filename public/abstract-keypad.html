@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#080E1A;--bg3:#131E33;--bg4:#1A2840;
+  --accent:#3B82F6;--accent-light:#93C5FD;--accent-border:rgba(59,130,246,0.3);
+  --teal:#10B981;--red:#EF4444;
+  --border:rgba(59,130,246,0.1);--border2:rgba(59,130,246,0.22);
+  --text:#F0F4FF;--muted:#6B7A99;
+  --font-mono:'DM Mono',monospace;--font-body:'DM Sans',sans-serif;
+  --card-w:min(calc(100vw - 32px),280px);
+}
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap');
+html,body{background:var(--bg);color:var(--text);font-family:var(--font-body);height:100dvh;overflow:hidden;}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:16px;gap:16px;}
+
+.pad-screen{width:var(--card-w);height:48px;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-size:22px;letter-spacing:10px;color:var(--accent-light);}
+.pad-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:var(--card-w);}
+.pad-btn{height:56px;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;
+  font-size:24px;color:var(--muted);cursor:pointer;transition:all 0.15s;
+  display:flex;align-items:center;justify-content:center;}
+.pad-btn:hover{border-color:var(--accent-border);color:var(--text);background:var(--bg4);}
+.pad-btn:active{transform:scale(0.93);}
+
+.feedback{font-family:var(--font-mono);font-size:clamp(10px,2.8vw,11px);
+  color:var(--red);text-align:center;min-height:14px;width:var(--card-w);}
+
+.solved-box{display:none;flex-direction:column;align-items:center;gap:6px;
+  padding:12px 20px;background:rgba(16,185,129,0.06);
+  border:1px solid rgba(16,185,129,0.2);border-radius:10px;
+  text-align:center;width:var(--card-w);}
+.solved-box.show{display:flex;}
+.solved-title{font-family:var(--font-mono);font-size:clamp(9px,2.5vw,10px);letter-spacing:2px;text-transform:uppercase;color:var(--teal);}
+.solved-msg{font-size:clamp(11px,3vw,12px);color:rgba(255,255,255,0.6);line-height:1.5;}
+</style>
+</head>
+<body>
+
+<div class="pad-screen" id="padScreen"></div>
+<div class="pad-grid" id="padGrid"></div>
+<div class="feedback" id="feedback"></div>
+
+<div class="solved-box" id="solvedBox">
+  <div class="solved-title" id="solvedTitle">Unlocked</div>
+  <div class="solved-msg" id="solvedMsg"></div>
+</div>
+
+<script>
+let config = {
+  glyphs:['☗','☁','☂','☾','★','☀','♠','♆','☤'],
+  answer:['☁','☂','♆'],
+  solvedTitle:'Unlocked', solvedMessage:'The mechanism disengages.',
+}
+let current = []
+let solved = false
+
+window.addEventListener('message', e => {
+  if (e.data?.type === 'PUZZLE_CONFIG') { config = { ...config, ...e.data.config }; init() }
+  if (e.data?.type === 'PUZZLE_SUBMIT') check()
+})
+
+function init() {
+  current = []
+  solved = false
+  buildGrid()
+  render()
+}
+
+function buildGrid() {
+  const grid = document.getElementById('padGrid')
+  grid.innerHTML = ''
+  config.glyphs.forEach(g => {
+    const btn = document.createElement('button')
+    btn.className = 'pad-btn'
+    btn.textContent = g
+    btn.onclick = () => press(g)
+    grid.appendChild(btn)
+  })
+}
+
+function press(g) {
+  if (solved || current.length >= config.answer.length) return
+  current.push(g)
+  render()
+  if (current.length === config.answer.length) check()
+}
+
+function render() {
+  document.getElementById('padScreen').textContent = current.join(' ')
+  document.getElementById('feedback').textContent = ''
+}
+
+function check() {
+  if (solved) return
+  const correct = config.answer.every((v, i) => current[i] === v)
+  if (correct) {
+    solved = true
+    document.getElementById('solvedTitle').textContent = config.solvedTitle || 'Unlocked'
+    document.getElementById('solvedMsg').textContent = config.solvedMessage
+    document.getElementById('solvedBox').classList.add('show')
+    document.getElementById('padGrid').style.opacity = '0.35'
+    setTimeout(() => window.parent.postMessage({ type: 'PUZZLE_SOLVED' }, '*'), 900)
+  } else {
+    document.getElementById('feedback').textContent = 'Incorrect sequence. Try again.'
+    setTimeout(() => { current = []; render() }, 600)
+    window.parent.postMessage({ type: 'PUZZLE_WRONG' }, '*')
+  }
+}
+
+init()
+</script>
+</body>
+</html>

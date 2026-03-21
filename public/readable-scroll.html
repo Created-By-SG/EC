@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#080E1A;--bg3:#131E33;
+  --teal:#10B981;
+  --border2:rgba(59,130,246,0.22);
+  --text:#F0F4FF;--muted:#6B7A99;
+  --font-mono:'DM Mono',monospace;--font-body:'DM Sans',sans-serif;
+  --card-w:min(calc(100vw - 32px),380px);
+}
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap');
+html,body{background:var(--bg);color:var(--text);font-family:var(--font-body);height:100dvh;overflow:hidden;}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:16px;gap:16px;}
+
+.scroll-outer{width:var(--card-w);cursor:pointer;user-select:none;}
+.scroll-closed{display:flex;align-items:center;gap:10px;padding:14px 16px;
+  background:rgba(255,255,255,0.03);border:1px solid var(--border2);border-radius:10px;transition:background 0.15s;}
+.scroll-closed:hover{background:rgba(255,255,255,0.06);}
+.scroll-icon{font-size:1.1rem;}
+.scroll-lbl{flex:1;font-family:var(--font-mono);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);}
+.scroll-chevron{font-size:10px;color:var(--muted);transition:transform 0.2s;display:inline-block;}
+.scroll-chevron.open{transform:rotate(180deg);}
+
+.scroll-content{max-height:0;overflow:hidden;transition:max-height 0.35s ease;}
+.scroll-content.open{max-height:800px;}
+.scroll-paper{padding:20px 18px;background:rgba(255,248,220,0.05);
+  border:1px solid rgba(255,248,220,0.1);border-top:none;border-radius:0 0 10px 10px;}
+.scroll-title{font-family:var(--font-mono);font-size:11px;font-weight:500;letter-spacing:2px;
+  text-transform:uppercase;color:rgba(255,248,220,0.7);margin-bottom:14px;}
+.scroll-text{font-size:14px;line-height:1.7;color:rgba(255,248,220,0.6);white-space:pre-line;}
+.scroll-sig{margin-top:18px;font-size:13px;font-style:italic;color:rgba(255,248,220,0.35);}
+</style>
+</head>
+<body>
+
+<div class="scroll-outer" onclick="toggle()">
+  <div class="scroll-closed">
+    <span class="scroll-icon">📜</span>
+    <span class="scroll-lbl">Tap to read</span>
+    <span class="scroll-chevron" id="chevron">▼</span>
+  </div>
+  <div class="scroll-content" id="scrollContent">
+    <div class="scroll-paper">
+      <div class="scroll-title" id="scrollTitle"></div>
+      <div class="scroll-text" id="scrollText"></div>
+      <div class="scroll-sig" id="scrollSig"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let open = false
+let config = { title:'', text:'', signature:'' }
+
+window.addEventListener('message', e => {
+  if (e.data?.type === 'PUZZLE_CONFIG') { config = { ...config, ...e.data.config }; init() }
+  // Scroll is read-only — PUZZLE_SUBMIT marks it as done
+  if (e.data?.type === 'PUZZLE_SUBMIT') {
+    setTimeout(() => window.parent.postMessage({ type: 'PUZZLE_SOLVED' }, '*'), 400)
+  }
+})
+
+function init() {
+  document.getElementById('scrollTitle').textContent = config.title || ''
+  document.getElementById('scrollText').textContent = config.text || ''
+  const sig = document.getElementById('scrollSig')
+  if (config.signature) { sig.textContent = '— ' + config.signature; sig.style.display = 'block' }
+  else { sig.style.display = 'none' }
+}
+
+function toggle() {
+  open = !open
+  document.getElementById('scrollContent').classList.toggle('open', open)
+  document.getElementById('chevron').classList.toggle('open', open)
+}
+
+init()
+</script>
+</body>
+</html>

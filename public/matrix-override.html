@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#080E1A;--bg3:#131E33;
+  --accent:#3B82F6;--accent-dim:rgba(59,130,246,0.15);--teal:#10B981;
+  --border2:rgba(59,130,246,0.22);
+  --text:#F0F4FF;--muted:#6B7A99;
+  --font-mono:'DM Mono',monospace;--font-body:'DM Sans',sans-serif;
+  --card-w:min(calc(100vw - 32px),340px);
+}
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap');
+html,body{background:var(--bg);color:var(--text);font-family:var(--font-body);height:100dvh;overflow:hidden;}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:16px;gap:16px;}
+
+.hint-text{font-family:var(--font-mono);font-size:11px;color:var(--muted);text-align:center;
+  max-width:var(--card-w);line-height:1.6;}
+
+.matrix-grid{display:grid;gap:8px;padding:16px;background:var(--bg3);border:1px solid var(--border2);border-radius:12px;}
+.matrix-cell{width:72px;height:72px;border-radius:10px;background:rgba(59,130,246,0.35);
+  border:1px solid rgba(59,130,246,0.4);cursor:pointer;transition:all 0.15s;
+  display:flex;align-items:center;justify-content:center;}
+.matrix-cell.on{background:rgba(59,130,246,0.12);border-color:var(--border2);}
+.matrix-cell:active{transform:scale(0.93);}
+.matrix-cell::after{content:'';width:8px;height:8px;border-radius:50%;
+  background:var(--accent);box-shadow:0 0 10px var(--accent);transition:all 0.15s;}
+.matrix-cell.on::after{background:transparent;box-shadow:none;}
+
+.solved-box{display:none;flex-direction:column;align-items:center;gap:6px;
+  padding:12px 20px;background:rgba(16,185,129,0.06);
+  border:1px solid rgba(16,185,129,0.2);border-radius:10px;
+  text-align:center;width:var(--card-w);}
+.solved-box.show{display:flex;}
+.solved-title{font-family:var(--font-mono);font-size:clamp(9px,2.5vw,10px);letter-spacing:2px;text-transform:uppercase;color:var(--teal);}
+.solved-msg{font-size:clamp(11px,3vw,12px);color:rgba(255,255,255,0.6);line-height:1.5;}
+</style>
+</head>
+<body>
+
+<p class="hint-text">Tapping a node toggles it and all adjacent nodes. Turn all nodes off.</p>
+<div class="matrix-grid" id="matrixGrid"></div>
+
+<div class="solved-box" id="solvedBox">
+  <div class="solved-title" id="solvedTitle">Cleared</div>
+  <div class="solved-msg" id="solvedMsg"></div>
+</div>
+
+<script>
+let config = { size:3, solvedTitle:'Cleared', solvedMessage:'All nodes deactivated.' }
+let matrix = []
+let solved = false
+
+window.addEventListener('message', e => {
+  if (e.data?.type === 'PUZZLE_CONFIG') { config = { ...config, ...e.data.config }; initMatrix() }
+})
+
+function initMatrix() {
+  solved = false
+  const M = config.size || 3
+  const grid = document.getElementById('matrixGrid')
+  grid.style.gridTemplateColumns = `repeat(${M}, 72px)`
+  grid.innerHTML = ''
+  document.getElementById('solvedBox').classList.remove('show')
+  matrix = Array(M * M).fill(false)
+  const cells = Array.from({length: M * M}, (_, i) => i)
+  cells.sort(() => Math.random() - 0.5)
+  cells.slice(0, M).forEach(idx => applyToggle(idx, M))
+  if (matrix.every(v => !v)) applyToggle(Math.floor(M * M / 2), M)
+  for (let i = 0; i < M * M; i++) {
+    const cell = document.createElement('div')
+    cell.className = 'matrix-cell' + (matrix[i] ? '' : ' on')
+    cell.id = 'mcell-' + i
+    cell.onclick = () => playerToggle(i)
+    grid.appendChild(cell)
+  }
+}
+
+function applyToggle(idx, M) {
+  const size = M || config.size || 3
+  const neighbors = [idx, idx-1, idx+1, idx-size, idx+size]
+  neighbors.forEach(n => {
+    if (n < 0 || n >= size*size) return
+    if (n === idx-1 && idx%size === 0) return
+    if (n === idx+1 && idx%size === size-1) return
+    matrix[n] = !matrix[n]
+  })
+}
+
+function playerToggle(idx) {
+  if (solved) return
+  applyToggle(idx)
+  const M = config.size || 3
+  for (let i = 0; i < M*M; i++) {
+    document.getElementById('mcell-'+i).className = 'matrix-cell' + (matrix[i] ? '' : ' on')
+  }
+  if (matrix.every(v => !v)) {
+    solved = true
+    document.getElementById('solvedTitle').textContent = config.solvedTitle || 'Cleared'
+    document.getElementById('solvedMsg').textContent = config.solvedMessage
+    document.getElementById('solvedBox').classList.add('show')
+    document.getElementById('matrixGrid').style.opacity = '0.4'
+    setTimeout(() => window.parent.postMessage({ type: 'PUZZLE_SOLVED' }, '*'), 900)
+  }
+}
+
+initMatrix()
+</script>
+</body>
+</html>

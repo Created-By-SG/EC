@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#080E1A;--bg3:#131E33;--bg4:#1A2840;
+  --accent:#3B82F6;--accent-light:#93C5FD;--teal:#10B981;--red:#EF4444;
+  --border2:rgba(59,130,246,0.22);
+  --text:#F0F4FF;--muted:#6B7A99;
+  --font-mono:'DM Mono',monospace;--font-body:'DM Sans',sans-serif;
+  --card-w:min(calc(100vw - 32px),340px);
+}
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap');
+html,body{background:var(--bg);color:var(--text);font-family:var(--font-body);height:100dvh;overflow:hidden;}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:16px;gap:16px;}
+
+.scope-display{width:var(--card-w);height:120px;background:#020509;border:1px solid var(--border2);
+  border-radius:8px;position:relative;overflow:hidden;}
+.scope-grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(46,53,69,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(46,53,69,0.5) 1px,transparent 1px);background-size:40px 30px;}
+.scope-canvas{position:absolute;inset:0;width:100%;height:100%;}
+
+.controls{width:var(--card-w);display:flex;flex-direction:column;gap:14px;}
+.ctrl-row{display:flex;align-items:center;gap:12px;}
+.ctrl-lbl{font-family:var(--font-mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);width:50px;flex-shrink:0;}
+.ctrl-slider{flex:1;-webkit-appearance:none;height:5px;background:var(--bg3);border-radius:3px;outline:none;border:1px solid var(--border2);}
+.ctrl-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg);}
+.ctrl-val{font-family:var(--font-mono);font-size:12px;color:var(--accent-light);width:30px;text-align:right;flex-shrink:0;}
+
+.feedback{font-family:var(--font-mono);font-size:clamp(10px,2.8vw,11px);
+  color:var(--muted);text-align:center;min-height:14px;width:var(--card-w);letter-spacing:0.5px;}
+.feedback.close{color:#eab308;}
+
+.solved-box{display:none;flex-direction:column;align-items:center;gap:6px;
+  padding:12px 20px;background:rgba(16,185,129,0.06);
+  border:1px solid rgba(16,185,129,0.2);border-radius:10px;
+  text-align:center;width:var(--card-w);}
+.solved-box.show{display:flex;}
+.solved-title{font-family:var(--font-mono);font-size:clamp(9px,2.5vw,10px);letter-spacing:2px;text-transform:uppercase;color:var(--teal);}
+.solved-msg{font-size:clamp(11px,3vw,12px);color:rgba(255,255,255,0.6);line-height:1.5;}
+</style>
+</head>
+<body>
+
+<div class="scope-display">
+  <div class="scope-grid-bg"></div>
+  <canvas class="scope-canvas" id="scopeCanvas"></canvas>
+</div>
+
+<div class="controls">
+  <div class="ctrl-row">
+    <span class="ctrl-lbl">Freq</span>
+    <input type="range" class="ctrl-slider" id="freqIn" min="1" max="15" value="4" oninput="updateScope()">
+    <span class="ctrl-val" id="freqVal">4</span>
+  </div>
+  <div class="ctrl-row">
+    <span class="ctrl-lbl">Amp</span>
+    <input type="range" class="ctrl-slider" id="ampIn" min="5" max="60" value="20" oninput="updateScope()">
+    <span class="ctrl-val" id="ampVal">20</span>
+  </div>
+</div>
+
+<div class="feedback" id="scopeFb">Match the ghost waveform.</div>
+
+<div class="solved-box" id="solvedBox">
+  <div class="solved-title" id="solvedTitle">Signal Intercepted</div>
+  <div class="solved-msg" id="solvedMsg"></div>
+</div>
+
+<script>
+let config = { targetFreq:7, targetAmp:45, solvedTitle:'Signal Intercepted', solvedMessage:'Broadcast locked.' }
+let solved = false
+
+window.addEventListener('message', e => {
+  if (e.data?.type === 'PUZZLE_CONFIG') { config = { ...config, ...e.data.config }; init() }
+})
+
+function init() {
+  const canvas = document.getElementById('scopeCanvas')
+  canvas.width = canvas.offsetWidth || 340
+  canvas.height = canvas.offsetHeight || 120
+  solved = false
+  updateScope()
+}
+
+function updateScope() {
+  document.getElementById('freqVal').textContent = document.getElementById('freqIn').value
+  document.getElementById('ampVal').textContent = document.getElementById('ampIn').value
+  draw()
+  if (!solved) check()
+}
+
+function draw() {
+  const canvas = document.getElementById('scopeCanvas')
+  const ctx = canvas.getContext('2d')
+  const W = canvas.width, H = canvas.height, mid = H / 2
+  const f = parseFloat(document.getElementById('freqIn').value)
+  const a = parseFloat(document.getElementById('ampIn').value)
+  ctx.clearRect(0, 0, W, H)
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 2
+  ctx.beginPath()
+  for (let x = 0; x <= W; x++) { const y = mid + Math.sin(x * config.targetFreq * 0.025) * config.targetAmp; x===0?ctx.moveTo(x,y):ctx.lineTo(x,y) }
+  ctx.stroke()
+  ctx.strokeStyle = solved ? 'rgba(16,185,129,0.9)' : 'rgba(59,130,246,0.9)'; ctx.lineWidth = 2.5
+  ctx.beginPath()
+  for (let x = 0; x <= W; x++) { const y = mid + Math.sin(x * f * 0.025) * a; x===0?ctx.moveTo(x,y):ctx.lineTo(x,y) }
+  ctx.stroke()
+}
+
+function check() {
+  const f = parseFloat(document.getElementById('freqIn').value)
+  const a = parseFloat(document.getElementById('ampIn').value)
+  const fb = document.getElementById('scopeFb')
+  const fDiff = Math.abs(f - config.targetFreq), aDiff = Math.abs(a - config.targetAmp)
+  if (f === config.targetFreq && a === config.targetAmp) {
+    solved = true
+    draw()
+    document.getElementById('solvedTitle').textContent = config.solvedTitle || 'Signal Intercepted'
+    document.getElementById('solvedMsg').textContent = config.solvedMessage
+    document.getElementById('solvedBox').classList.add('show')
+    fb.style.display = 'none'
+    setTimeout(() => window.parent.postMessage({ type: 'PUZZLE_SOLVED' }, '*'), 900)
+  } else if (fDiff <= 1 && aDiff <= 5) {
+    fb.textContent = 'Very close...'; fb.className = 'feedback close'
+  } else {
+    fb.textContent = 'Match the ghost waveform.'; fb.className = 'feedback'
+  }
+}
+
+window.addEventListener('resize', () => {
+  const canvas = document.getElementById('scopeCanvas')
+  canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; draw()
+})
+
+init()
+</script>
+</body>
+</html>
