@@ -150,8 +150,9 @@ export default function PuzzleCard({
     if (type === 'story') setStoryPuzzleSolved(true)
     if (type === 'geo') setGeoPuzzleSolved(true)
 
-    const bothSolved = type === 'story' ? geoPuzzleSolved : storyPuzzleSolved
-    if (bothSolved) {
+    // Check if both are now solved — compare against what the OTHER one already was
+    const otherAlreadySolved = type === 'story' ? geoPuzzleSolved : storyPuzzleSolved
+    if (otherAlreadySolved) {
       setTimeout(() => onSolved(puzzle.stage, null), 800)
     }
   }

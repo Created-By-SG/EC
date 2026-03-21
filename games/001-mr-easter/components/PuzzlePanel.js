@@ -43,7 +43,7 @@ export default function PuzzlePanel({
   const puzzles = [
     storyPuzzle && { key: 'story', def: storyPuzzle, solved: storyPuzzleSolved },
     geoPuzzle   && { key: 'geo',   def: geoPuzzle,   solved: geoPuzzleSolved   },
-  ].filter(Boolean)
+  ].filter(Boolean).sort((a, b) => a.solved - b.solved) // unsolved first
 
   return (
     <div className={styles.overlay} onClick={onClose}>
