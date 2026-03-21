@@ -44,7 +44,7 @@ body{
   display:flex;justify-content:center;align-items:flex-end;gap:16px;
   padding:clamp(10px,2dvh,16px) 20px clamp(10px,2dvh,14px);
   background:#020408;
-  height:clamp(100px,20dvh,140px);
+  height:clamp(115px,23dvh,161px);
   flex-shrink:1;min-height:0;
 }
 .vu-ch{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;}
@@ -79,14 +79,14 @@ input[type=range]{
 /* Slightly smaller than police scanner (30px) as requested */
 input[type=range]::-webkit-slider-thumb{
   -webkit-appearance:none;
-  width:26px;height:26px;border-radius:50%;
+  width:30px;height:30px;border-radius:50%;
   background:var(--accent);
-  border:2.5px solid var(--bg);
+  border:3px solid var(--bg);
   box-shadow:0 0 0 2px var(--accent);
   transition:transform 0.1s;
 }
 input[type=range]:active::-webkit-slider-thumb{transform:scale(1.15);}
-input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--accent);border:2.5px solid var(--bg);}
+input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;background:var(--accent);border:3px solid var(--bg);}
 .sl-val{font-family:var(--font-mono);font-size:clamp(10px,2.8vw,11px);color:var(--text);width:26px;text-align:right;}
 
 
