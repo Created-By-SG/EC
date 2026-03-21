@@ -87,9 +87,11 @@ export default function PuzzleCard({
   const [showButtons, setShowButtons] = useState(DEV_MODE ? status === 'active' : false)
   const [isOpen, setIsOpen]         = useState(status !== 'locked')
   const [activeDrawer, setActiveDrawer] = useState(null) // 'story' | 'geo' | null
-  const [submitFn, setSubmitFn] = useState(null)          // fn provided by active PuzzleDrawer
-  const [storyPuzzleSolved, setStoryPuzzleSolved] = useState(() => Boolean(initialPuzzleMask & 1))
-  const [geoPuzzleSolved, setGeoPuzzleSolved]     = useState(() => Boolean(initialPuzzleMask & 2))
+  const [submitFn, setSubmitFn] = useState(null)
+  // storyIndex tracks which story puzzle is current (0, 1, 2...)
+  // initialPuzzleMask lower bits store storyIndex, bit 8 = geo done
+  const [storyIndex, setStoryIndex]       = useState(() => initialPuzzleMask & 0xFF)
+  const [geoPuzzleSolved, setGeoPuzzleSolved] = useState(() => Boolean(initialPuzzleMask & 0x100))
 
   const bottomRef    = useRef(null)
   const didAnimate   = useRef(false)
@@ -98,7 +100,9 @@ export default function PuzzleCard({
   useEffect(() => { onSolvedRef.current = onSolved }, [onSolved])
 
   // Look up puzzle definitions for this stage
-  const storyPuzzle = getStoryPuzzle(puzzle.stage)
+  const storyPuzzle = getStoryPuzzle(puzzle.stage, storyIndex)
+  const storyPoolSize = puzzle.storyPool?.length || 1
+  const storyAllDone  = storyIndex >= storyPoolSize
   const geoPuzzle   = getGeoPuzzle(puzzle.stage)
 
   function typingDelay(text) {
@@ -170,27 +174,27 @@ export default function PuzzleCard({
       solved: true,
     }])
 
-    const newStoryDone = type === 'story' ? true : storyPuzzleSolved
-    const newGeoDone   = type === 'geo'   ? true : geoPuzzleSolved
+    const newStoryIndex = type === 'story' ? storyIndex + 1 : storyIndex
+    const newGeoDone    = type === 'geo'   ? true : geoPuzzleSolved
 
-    if (type === 'story') setStoryPuzzleSolved(true)
+    if (type === 'story') setStoryIndex(newStoryIndex)
     if (type === 'geo')   setGeoPuzzleSolved(true)
 
-    // Persist sub-puzzle mask so state survives drawer close / session resume
-    const newMask = (newStoryDone ? 1 : 0) | (newGeoDone ? 2 : 0)
-    if (onPuzzleCompleted) onPuzzleCompleted()
+    // mask: lower byte = storyIndex, bit 8 = geo done
+    const newMask = (newStoryIndex & 0xFF) | (newGeoDone ? 0x100 : 0)
     if (sessionId) {
       fetch('/api/save-progress', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, stage: puzzle.stage, puzzleMask: newMask }),
-      }).catch(() => {})
+        body: JSON.stringify({ sessionId, stage: puzzle.stage, puzzleMask: newMask, elapsedSeconds: 0 }),
+      }).catch(err => console.error('[PuzzleCard] save-progress failed:', err))
     }
 
-    // Stage complete when all present puzzles are done
-    const storyRequired = Boolean(storyPuzzle)
-    const geoRequired   = Boolean(geoPuzzle)
-    const bothSolved = (!storyRequired || newStoryDone) && (!geoRequired || newGeoDone)
+    if (onPuzzleCompleted) onPuzzleCompleted()
+
+    const storyAllDoneNow = newStoryIndex >= storyPoolSize
+    const geoRequired     = Boolean(geoPuzzle)
+    const bothSolved      = storyAllDoneNow && (!geoRequired || newGeoDone)
     if (bothSolved) {
       setTimeout(() => onSolvedRef.current?.(puzzle.stage, null), 800)
     }
@@ -296,16 +300,19 @@ export default function PuzzleCard({
                 : (geoPuzzle?.submitLabel  || 'Submit')}
             </button>
           ) : (
-            // Drawer closed — puzzle entry buttons
+            // Two buttons — story (current index) and geo. Label updates as puzzles are solved.
             <div className={styles.puzzleButtons}>
-              {storyPuzzle && (
+              {storyPuzzle && !storyAllDone && (
                 <button
-                  className={`${styles.puzzleBtn} ${storyPuzzleSolved ? styles.puzzleBtnSolved : ''}`}
-                  onClick={() => !storyPuzzleSolved && setActiveDrawer('story')}
-                  disabled={storyPuzzleSolved}
+                  className={styles.puzzleBtn}
+                  onClick={() => setActiveDrawer('story')}
                 >
-                  {storyPuzzleSolved ? '✓ ' : '🔍 '}
-                  {storyPuzzle.buttonLabel}
+                  🔍 {storyPuzzle.buttonLabel}
+                </button>
+              )}
+              {storyAllDone && storyPuzzle && (
+                <button className={`${styles.puzzleBtn} ${styles.puzzleBtnSolved}`} disabled>
+                  ✓ {storyPuzzle.buttonLabel}
                 </button>
               )}
               {geoPuzzle && (
