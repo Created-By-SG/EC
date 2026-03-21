@@ -17,7 +17,7 @@ export default function PuzzleDrawer({
   puzzlesTotal,
   onPuzzleSolved,
   headerOffset = 120,
-  inputOffset  = 110,
+  inputOffset  = 0,
 }) {
   const [flyActive, setFlyActive] = useState(false)
   const [hintIndex, setHintIndex] = useState(0)
@@ -125,6 +125,11 @@ export default function PuzzleDrawer({
               {availableHints.length > 0 && hintIndex < availableHints.length && (
                 <button className={styles.hintBtn} onClick={requestHint}>
                   Hint {hintIndex + 1}
+                </button>
+              )}
+              {DEV_MODE && (
+                <button className={styles.devSolveBtn} onClick={handleSolve}>
+                  Solve
                 </button>
               )}
               <button className={styles.closeBtn} onClick={onClose}>✕</button>

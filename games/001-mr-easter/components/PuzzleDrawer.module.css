@@ -74,7 +74,7 @@
   top: var(--drawer-top, 120px); /* nav 56px + gameHeader 64px */
   left: 0;
   right: 0;
-  bottom: var(--drawer-bottom, 110px); /* clears fixed input/puzzle button bar */
+  bottom: 0; /* extends to bottom edge, covering the action buttons */
   background: rgba(0, 0, 0, 0.6);
   z-index: 100;
   display: flex;
@@ -191,6 +191,23 @@
   white-space: nowrap;
 }
 .hintBtn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.devSolveBtn {
+  background: rgba(245, 158, 11, 0.12);
+  border: 0.5px solid rgba(245, 158, 11, 0.35);
+  border-radius: 8px;
+  color: rgba(245, 158, 11, 0.9);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.devSolveBtn:hover { background: rgba(245, 158, 11, 0.25); }
 
 .closeBtn {
   display: flex;
