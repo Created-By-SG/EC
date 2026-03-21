@@ -222,6 +222,7 @@ const PUZZLES = {
           },
           {
             iframeSrc: '/Input_PoliceScanner_001.html',
+            submitLabel: 'Intercept Signal',
             stepLabel: 'Tune the Scanner',
             hint_1: 'Both channels must be correct at the same time. Check your items for the values.',
             hint_2: 'Frequency: 73 Hz. Amplitude: 42%.',
@@ -236,6 +237,7 @@ const PUZZLES = {
           },
           {
             iframeSrc: '/Input_SoundCalibration_001.html',
+            submitLabel: 'Broadcast',
             stepLabel: 'Calibrate Output',
             hint_1: 'Align each bar to the orange marker on the VU meter.',
             devAnswer: 'Left=65  Centre=40  Right=55  (align bars to orange markers)',
@@ -257,6 +259,7 @@ const PUZZLES = {
       {
         buttonLabel: 'Search the Area',
         iframeSrc: '/Navigation_DirectionMaze_001.html',
+            submitLabel: 'Confirm Route',
         hint_1: 'Navigate ● to ★ by tapping adjacent cells. The map item in your sack shows where the traps are.',
         hint_2: 'Safe path: R, D, R, D, D, R, D, R, R, D, R',
         devAnswer: 'Safe path: Right, Down, Right, Down, Down, Right, Down, Right, Right, Down, Right',
