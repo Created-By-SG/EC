@@ -32,7 +32,8 @@ export default function PuzzleCard({
   onHintUsed,
   puzzlesSolved = 0,
   puzzlesTotal = 2,
-  headerOffset = 56,   // nav only — drawer covers game header for max puzzle height
+  headerOffset = 56,
+  initialPuzzleMask = 0,   // nav only — drawer covers game header for max puzzle height
 }) {
   // Story messages only — no question in chat
   const storyMessages = (puzzle.messages || []).filter(m => !m.isQuestion)
@@ -64,8 +65,8 @@ export default function PuzzleCard({
   const [isOpen, setIsOpen]         = useState(status !== 'locked')
   const [activeDrawer, setActiveDrawer] = useState(null) // 'story' | 'geo' | null
   const [submitFn, setSubmitFn] = useState(null)          // fn provided by active PuzzleDrawer
-  const [storyPuzzleSolved, setStoryPuzzleSolved] = useState(false)
-  const [geoPuzzleSolved, setGeoPuzzleSolved]     = useState(false)
+  const [storyPuzzleSolved, setStoryPuzzleSolved] = useState(() => Boolean(initialPuzzleMask & 1))
+  const [geoPuzzleSolved, setGeoPuzzleSolved]     = useState(() => Boolean(initialPuzzleMask & 2))
 
   const bottomRef    = useRef(null)
   const didAnimate   = useRef(false)
@@ -144,10 +145,23 @@ export default function PuzzleCard({
       solved: true,
     }])
 
-    if (type === 'story') setStoryPuzzleSolved(true)
-    if (type === 'geo') setGeoPuzzleSolved(true)
+    const newStoryDone = type === 'story' ? true : storyPuzzleSolved
+    const newGeoDone   = type === 'geo'   ? true : geoPuzzleSolved
 
-    const bothSolved = type === 'story' ? geoPuzzleSolved : storyPuzzleSolved
+    if (type === 'story') setStoryPuzzleSolved(true)
+    if (type === 'geo')   setGeoPuzzleSolved(true)
+
+    // Persist sub-puzzle mask so state survives drawer close / session resume
+    const newMask = (newStoryDone ? 1 : 0) | (newGeoDone ? 2 : 0)
+    if (sessionId) {
+      fetch('/api/save-progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, stage: puzzle.stage, puzzleMask: newMask }),
+      }).catch(() => {})
+    }
+
+    const bothSolved = newStoryDone && newGeoDone
     if (bothSolved) {
       setTimeout(() => onSolved(puzzle.stage, null), 800)
     }
