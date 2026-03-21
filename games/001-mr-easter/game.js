@@ -1,11 +1,29 @@
 // games/001-mr-easter/game.js
+// DESTINATION: games/001-mr-easter/
+//
 // Single source of truth for The Bunny Who Stole Easter.
 //
 // TWO SECTIONS:
-//   1. STORY  — read top to bottom like a script. Edit chat text here.
-//   2. PUZZLES — widget configs per stage. Edit puzzle mechanics here.
+//   1. STORY   — chat messages per stage. Edit text here only.
+//   2. PUZZLES — widget configs per stage. Edit mechanics here.
 //
-// Style rules: no hyphens or em dashes in copy. Use three dots instead.
+// STAGE 1 SCRIPT RULES:
+//   - Messages are split into short individual lines (one sentence per message)
+//   - type: 'event' renders as amber full-width strip (not a chat bubble)
+//   - itemId on event rows assigns which inventory item gets added to the Kin Sack
+//   - from: 'user' renders as right-aligned player bubble
+//
+// PUZZLE CONFIG KEYS:
+//   iframeSrc    — path to HTML puzzle in /public/
+//   submitLabel  — text shown on context bar submit button when drawer is open
+//   hint_1/2     — revealed one at a time via Hint button in drawer header
+//   devAnswer    — shown in amber strip at drawer bottom in DEV_MODE only
+//   buttonLabel  — text on the puzzle entry button in the context bar
+//
+// STYLE RULES — NO EXCEPTIONS:
+//   - No hyphens or em dashes anywhere in copy (use three dots instead)
+//   - No decorative emojis in story messages
+//   - Written in short punchy sentences, one per message object
 
 
 // ─────────────────────────────────────────────────────────────────────────────
