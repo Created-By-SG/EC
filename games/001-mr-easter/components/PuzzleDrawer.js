@@ -1,8 +1,31 @@
 // components/PuzzleDrawer.js
-// Slide-up drawer rendering a puzzle widget.
-// Supports iframe puzzles (iframeSrc:) and puzzle chains (chain: [...steps]).
-// Chain: each step sends PUZZLE_SOLVED to advance. Final step fires onPuzzleSolved.
-// DEV_MODE: shows answer key below puzzle.
+// DESTINATION: games/001-mr-easter/components/
+//
+// Slide-up drawer that renders a puzzle widget (iframe or React component).
+// Sits above the context bar — bottom edge stops at --drawer-bottom (80px by default)
+// so the submit button in PuzzleCard's context bar stays visible below.
+// Top edge starts at --drawer-top (56px = nav height only, NOT game header)
+// so the drawer covers the game header and gains that extra space.
+//
+// SUBMIT FLOW:
+//   Parent (PuzzleCard) calls submitFn() from context bar button
+//   → submitPuzzle() posts PUZZLE_SUBMIT to the iframe
+//   → iframe runs check(), posts PUZZLE_SOLVED or shows error
+//   → PUZZLE_SOLVED caught here → handleSolve() → onPuzzleSolved()
+//   Drawer only closes on correct answer. Wrong answer = drawer stays open.
+//
+// onSubmitReady(fn) — callback that hands submitFn up to PuzzleCard on open/step change
+//   PuzzleCard stores it in submitFn state and calls it from the context bar button
+//
+// DEV_MODE extras: Solve button (bypasses puzzle), answer key strip at bottom
+//
+// CHAIN PUZZLES: chain: [...steps] — each step posts PUZZLE_SOLVED to advance
+//   Final step fires onPuzzleSolved to parent
+//
+// IMPORTANT — DO NOT:
+//   - Set headerOffset back to 120 (drawer would be too short, cutting off puzzles)
+//   - Add submit buttons inside this drawer (they live in PuzzleCard context bar)
+//   - Remove onSubmitReady callback (breaks context bar submit button)
 
 import { useState, useEffect, useRef } from 'react'
 import styles from './PuzzleDrawer.module.css'
@@ -24,7 +47,9 @@ export default function PuzzleDrawer({
   const [hintIndex, setHintIndex] = useState(0)
   const [hints, setHints] = useState([])
   const [chainStep, setChainStep] = useState(0)
-  const iframeRef = useRef(null)
+  const iframeRef    = useRef(null)
+  const handleSolveRef = useRef(null)  // ref so message listener never goes stale
+  const submitFnRef    = useRef(null)  // ref so parent context bar never goes stale
 
   const isChain = Boolean(puzzleDef?.chain?.length)
   const currentStep = isChain ? puzzleDef.chain[chainStep] : puzzleDef
@@ -65,34 +90,34 @@ export default function PuzzleDrawer({
   useEffect(() => {
     if (!isOpen) return
     function handleMessage(e) {
-      if (e.data?.type === 'PUZZLE_SOLVED') handleSolve()
+      if (e.data?.type === 'PUZZLE_SOLVED') handleSolveRef.current?.()
       if (e.data?.type === 'PUZZLE_WRONG')  {}
     }
     window.addEventListener('message', handleMessage)
     return () => window.removeEventListener('message', handleMessage)
   }, [isOpen, chainStep])
 
-  // Called by parent context bar button
-  function submitPuzzle() {
+  // Called by parent context bar button — stored in ref so it's never stale
+  submitFnRef.current = function submitPuzzle() {
     if (iframeRef.current) {
       iframeRef.current.contentWindow.postMessage({ type: 'PUZZLE_SUBMIT' }, '*')
     } else {
-      // React component puzzle — call handleSolve directly (component handles own validation)
-      handleSolve()
+      handleSolveRef.current?.()
     }
   }
 
-  // Expose submitPuzzle to parent whenever drawer opens or step changes
+  // Expose stable submit function to parent on open / step change
   useEffect(() => {
-    if (isOpen && onSubmitReady) onSubmitReady(submitPuzzle)
+    if (isOpen && onSubmitReady) {
+      // Wrap in stable function so parent always calls the current ref
+      onSubmitReady(() => submitFnRef.current?.())
+    }
   }, [isOpen, chainStep])
 
   function handleSolve() {
     if (isChain && chainStep < totalSteps - 1) {
-      // Advance to next step in chain
       setTimeout(() => setChainStep(s => s + 1), 600)
     } else {
-      // Final step — complete the puzzle
       setFlyActive(true)
       setTimeout(() => {
         setFlyActive(false)
@@ -100,6 +125,8 @@ export default function PuzzleDrawer({
       }, 900)
     }
   }
+  // Keep ref current so message listener always calls the latest version
+  handleSolveRef.current = handleSolve
 
   function requestHint() {
     const available = [currentStep?.hint_1, currentStep?.hint_2].filter(Boolean)
