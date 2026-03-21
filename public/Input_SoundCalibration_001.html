@@ -41,25 +41,25 @@ body{
 .out-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.15);}
 
 .vu-display{
-  display:flex;justify-content:center;align-items:flex-end;gap:16px;
+  display:flex;justify-content:center;align-items:stretch;gap:16px;
   padding:clamp(10px,2dvh,16px) 20px clamp(10px,2dvh,14px);
   background:#020408;
   height:40dvh;
   flex-shrink:1;min-height:0;
 }
-.vu-ch{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;}
+.vu-ch{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;min-height:0;}
 .vu-bar-wrap{
   width:22px;flex:1;
   background:rgba(255,255,255,0.04);
   border:1px solid var(--border);border-radius:3px;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:flex-end;
   position:relative;
-  height:100%;
 }
 .vu-target{
   position:absolute;left:0;right:0;height:2px;
   background:var(--amber);opacity:0.7;pointer-events:none;
 }
-.vu-fill{position:absolute;bottom:0;left:0;right:0;transition:height 0.12s,background 0.2s;border-radius:0 0 2px 2px;}
+.vu-fill{width:100%;transition:height 0.12s,background 0.2s;border-radius:0 0 2px 2px;}
 .vu-lbl{font-family:var(--font-mono);font-size:clamp(8px,2.2vw,9px);color:var(--muted);}
 
 .sliders{
@@ -165,7 +165,7 @@ function buildVU() {
     col.innerHTML = `
       <div class="vu-bar-wrap">
         <div class="vu-target" id="vt-${i}" style="bottom:${ch.target}%"></div>
-        <div class="vu-fill" id="vf-${i}" style="height:50%;background:${ch.color}40"></div>
+        <div class="vu-fill" id="vf-${i}" style="flex-basis:50%;height:0;background:${ch.color}40"></div>
       </div>
       <span class="vu-lbl">${ch.label}</span>
     `
@@ -194,7 +194,8 @@ function update() {
   config.channels.forEach((ch, i) => {
     const val = +document.getElementById(`sl-${i}`).value
     document.getElementById(`sv-${i}`).textContent = val
-    document.getElementById(`vf-${i}`).style.height = val + '%'
+    document.getElementById(`vf-${i}`).style.flexBasis = val + '%'
+    document.getElementById(`vf-${i}`).style.height = ''
     document.getElementById(`vf-${i}`).style.background = ch.color + '80'
   })
   document.getElementById('feedback').textContent = ''
@@ -212,6 +213,7 @@ function check() {
     solved = true
     config.channels.forEach((_, i) => {
       document.getElementById(`vf-${i}`).style.background = '#10B981'
+      document.getElementById(`vf-${i}`).style.flexBasis = document.getElementById(`sl-${i}`).value + '%'
     })
     document.getElementById('outDot').style.background = '#10B981'
     document.getElementById('outText').textContent = 'Broadcasting'
