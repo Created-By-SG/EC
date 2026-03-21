@@ -378,6 +378,7 @@ export default function RoomPage({ roomSlug, gameId }) {
         <GameHeader
           puzzles={puzzles}
           progress={progress}
+          puzzleMasks={puzzleMasks}
           puzzleCounter={activePuzzle ? `${puzzleSolvedCount}/1` : null}
           onBagOpen={() => setBagOpen(true)}
           onLogOpen={() => setLogOpen(true)}
