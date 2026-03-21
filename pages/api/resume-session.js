@@ -40,8 +40,12 @@ export default async function handler(req, res) {
     .order('stage', { ascending: true })
 
   const progressData = {}
+  const puzzleMasks = {}
   if (stageRows) {
-    stageRows.forEach(row => { progressData[row.stage] = row.status })
+    stageRows.forEach(row => {
+      progressData[row.stage] = row.status
+      if (row.puzzle_index != null) puzzleMasks[row.stage] = row.puzzle_index
+    })
   }
 
   // 4. Fetch collected items so joining players get full inventory
@@ -59,6 +63,7 @@ export default async function handler(req, res) {
     elapsedSeconds,
     expired,
     progressData,
+    puzzleMasks,
     collectedItems: itemRows || [],
   })
 }
