@@ -41,12 +41,16 @@ export default function PuzzleCard({
     // DEV_MODE: show all story messages immediately, skip animation
     if (DEV_MODE && status === 'active') {
       return storyMessages.map((m, i) => ({
-        id: `story-${i}`, from: 'contact', sender: m.sender, text: m.text
+        ...m,
+        id: `story-${i}`,
+        from: m.from || (m.type === 'event' ? 'event' : 'contact'),
       }))
     }
     if (status === 'locked' || status === 'active') return []
     const msgs = storyMessages.map((m, i) => ({
-      id: `story-${i}`, from: 'contact', sender: m.sender, text: m.text
+      ...m,
+      id: `story-${i}`,
+      from: m.from || (m.type === 'event' ? 'event' : 'contact'),
     }))
     if (status === 'solved') {
       msgs.push({ id: 'solved-msg', from: 'system', text: '✓ Stage complete' })
@@ -118,7 +122,7 @@ export default function PuzzleCard({
       await new Promise(r => setTimeout(r, 1200 + Math.random() * 800))
       for (let i = 0; i < storyMessages.length; i++) {
         const m = storyMessages[i]
-        await pushMessage({ from: 'contact', sender: m.sender, text: m.text })
+        await pushMessage({ ...m, from: m.from || (m.type === 'event' ? 'event' : 'contact') })
         if (i < storyMessages.length - 1) await pause(m.text)
       }
       setShowButtons(true)
@@ -234,31 +238,48 @@ export default function PuzzleCard({
         <div ref={bottomRef} />
       </div>
 
-      {/* Puzzle action buttons */}
+      {/* Puzzle action buttons — both when drawer closed, single active when drawer open */}
       {status !== 'solved' && showButtons && (
         <div className={styles.inputArea}>
-          <div className={styles.puzzleButtons}>
-            {storyPuzzle && (
-              <button
-                className={`${styles.puzzleBtn} ${storyPuzzleSolved ? styles.puzzleBtnSolved : ''}`}
-                onClick={() => !storyPuzzleSolved && setActiveDrawer('story')}
-                disabled={storyPuzzleSolved}
-              >
-                {storyPuzzleSolved ? '✓ ' : '📄 '}
-                {storyPuzzle.buttonLabel}
-              </button>
-            )}
-            {geoPuzzle && (
-              <button
-                className={`${styles.puzzleBtn} ${geoPuzzleSolved ? styles.puzzleBtnSolved : ''}`}
-                onClick={() => !geoPuzzleSolved && setActiveDrawer('geo')}
-                disabled={geoPuzzleSolved}
-              >
-                {geoPuzzleSolved ? '✓ ' : '🗺 '}
-                {geoPuzzle.buttonLabel}
-              </button>
-            )}
-          </div>
+          {activeDrawer ? (
+            // Drawer is open — show only the active puzzle as a single muted button
+            <div className={styles.puzzleButtons}>
+              {activeDrawer === 'story' && storyPuzzle && (
+                <button className={`${styles.puzzleBtn} ${styles.puzzleBtnActive}`} onClick={() => setActiveDrawer(null)}>
+                  📄 {storyPuzzle.buttonLabel}
+                </button>
+              )}
+              {activeDrawer === 'geo' && geoPuzzle && (
+                <button className={`${styles.puzzleBtn} ${styles.puzzleBtnActive}`} onClick={() => setActiveDrawer(null)}>
+                  🗺 {geoPuzzle.buttonLabel}
+                </button>
+              )}
+            </div>
+          ) : (
+            // Drawer closed — show all puzzle buttons
+            <div className={styles.puzzleButtons}>
+              {storyPuzzle && (
+                <button
+                  className={`${styles.puzzleBtn} ${storyPuzzleSolved ? styles.puzzleBtnSolved : ''}`}
+                  onClick={() => !storyPuzzleSolved && setActiveDrawer('story')}
+                  disabled={storyPuzzleSolved}
+                >
+                  {storyPuzzleSolved ? '✓ ' : '📄 '}
+                  {storyPuzzle.buttonLabel}
+                </button>
+              )}
+              {geoPuzzle && (
+                <button
+                  className={`${styles.puzzleBtn} ${geoPuzzleSolved ? styles.puzzleBtnSolved : ''}`}
+                  onClick={() => !geoPuzzleSolved && setActiveDrawer('geo')}
+                  disabled={geoPuzzleSolved}
+                >
+                  {geoPuzzleSolved ? '✓ ' : '🗺 '}
+                  {geoPuzzle.buttonLabel}
+                </button>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -273,6 +294,7 @@ export default function PuzzleCard({
           puzzlesSolved={puzzlesSolved}
           puzzlesTotal={puzzlesTotal}
           headerOffset={headerOffset}
+          inputOffset={80}
           onPuzzleSolved={() => {
             setActiveDrawer(null)
             handlePuzzleSolved('story')
@@ -291,6 +313,7 @@ export default function PuzzleCard({
           puzzlesSolved={puzzlesSolved}
           puzzlesTotal={puzzlesTotal}
           headerOffset={headerOffset}
+          inputOffset={80}
           onPuzzleSolved={() => {
             setActiveDrawer(null)
             handlePuzzleSolved('geo')

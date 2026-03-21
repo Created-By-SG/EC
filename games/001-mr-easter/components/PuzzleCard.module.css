@@ -591,6 +591,16 @@
   cursor: default;
 }
 
+/* Active drawer state — single button shown below open drawer */
+.puzzleBtnActive {
+  background: var(--bg4);
+  border-color: var(--accent-border);
+  color: var(--accent-light);
+  opacity: 0.85;
+  text-align: center;
+  justify-content: center;
+}
+
 /* ─── Event annotation ─── */
 .eventLine {
   display: flex;
