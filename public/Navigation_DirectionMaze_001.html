@@ -100,6 +100,7 @@ let done = false
 
 window.addEventListener('message', e => {
   if (e.data?.type === 'PUZZLE_CONFIG') { config = { ...config, ...e.data.config }; resetMaze() }
+  // PUZZLE_SUBMIT not used for maze — player taps cells to solve
 })
 
 function key(r, c) { return `${r},${c}` }

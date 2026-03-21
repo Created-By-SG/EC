@@ -77,13 +77,7 @@ input[type=range]:active::-webkit-slider-thumb{transform:scale(1.15);}
 input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;background:var(--accent);border:3px solid var(--bg);}
 .sl-fill{position:absolute;top:0;left:0;height:100%;background:var(--accent);border-radius:3px;pointer-events:none;transition:width 0.05s;}
 
-.submit-btn{
-  width:var(--card-w);padding:clamp(11px,2dvh,14px);
-  background:var(--accent);border:none;border-radius:8px;
-  color:#fff;font-family:var(--font-mono);font-size:clamp(10px,2.8vw,11px);font-weight:500;
-  letter-spacing:2px;text-transform:uppercase;cursor:pointer;flex-shrink:0;
-}
-.submit-btn:disabled{opacity:0.4;cursor:not-allowed;}
+
 
 .feedback{
   font-family:var(--font-mono);font-size:clamp(10px,2.8vw,11px);
@@ -141,7 +135,6 @@ input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;bac
   </div>
 </div>
 
-<button class="submit-btn" id="submitBtn" onclick="check()">Intercept Signal</button>
 <div class="feedback" id="feedback"></div>
 <div class="solved-box" id="solvedBox">
   <div class="solved-title" id="solvedTitle">Signal Intercepted</div>
@@ -153,7 +146,10 @@ let config = { targetFreq:73, targetAmp:42, tolerance:1, solvedTitle:'Signal Int
 let solved = false
 const FREQ_MIN=40, FREQ_MAX=110, AMP_MIN=20, AMP_MAX=70
 
-window.addEventListener('message', e => { if (e.data?.type === 'PUZZLE_CONFIG') { config={...config,...e.data.config}; update() } })
+window.addEventListener('message', e => {
+  if (e.data?.type === 'PUZZLE_CONFIG') { config={...config,...e.data.config}; update() }
+  if (e.data?.type === 'PUZZLE_SUBMIT') check()
+})
 
 const canvas = document.getElementById('scopeCanvas')
 const ctx = canvas.getContext('2d')
@@ -196,7 +192,6 @@ function check() {
     solved=true
     document.getElementById('statusDot').className='status-dot locked'
     document.getElementById('statusText').textContent='Locked'
-    document.getElementById('submitBtn').disabled=true
     document.getElementById('solvedTitle').textContent=config.solvedTitle||'Signal Intercepted'
     document.getElementById('solvedMsg').textContent=config.solvedMessage||''
     document.getElementById('solvedBox').classList.add('show')

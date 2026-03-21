@@ -89,15 +89,7 @@ input[type=range]:active::-webkit-slider-thumb{transform:scale(1.15);}
 input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--accent);border:2.5px solid var(--bg);}
 .sl-val{font-family:var(--font-mono);font-size:clamp(10px,2.8vw,11px);color:var(--text);width:26px;text-align:right;}
 
-.submit-btn{
-  width:var(--card-w);padding:clamp(11px,2dvh,14px);
-  background:var(--accent);border:none;border-radius:8px;
-  color:#fff;font-family:var(--font-mono);font-size:clamp(10px,2.8vw,11px);font-weight:500;
-  letter-spacing:2px;text-transform:uppercase;cursor:pointer;flex-shrink:0;
-  transition:background 0.15s,opacity 0.15s;
-}
-.submit-btn:hover{background:#2563EB;}
-.submit-btn:disabled{opacity:0.4;cursor:not-allowed;}
+
 
 .feedback{
   font-family:var(--font-mono);font-size:clamp(10px,2.8vw,11px);
@@ -132,7 +124,6 @@ input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;bac
   <div class="sliders" id="sliders"></div>
 </div>
 
-<button class="submit-btn" id="submitBtn" onclick="check()">Broadcast</button>
 <div class="feedback" id="feedback"></div>
 
 <div class="solved-box" id="solvedBox">
@@ -155,6 +146,7 @@ let solved = false
 
 window.addEventListener('message', e => {
   if (e.data?.type === 'PUZZLE_CONFIG') { config = { ...config, ...e.data.config }; init() }
+  if (e.data?.type === 'PUZZLE_SUBMIT') check()
 })
 
 function init() {
@@ -223,7 +215,6 @@ function check() {
     })
     document.getElementById('outDot').style.background = '#10B981'
     document.getElementById('outText').textContent = 'Broadcasting'
-    document.getElementById('submitBtn').disabled = true
     document.getElementById('solvedTitle').textContent = config.solvedTitle || 'Signal Broadcast'
     document.getElementById('solvedMsg').textContent   = config.solvedMessage || ''
     document.getElementById('solvedBox').classList.add('show')
