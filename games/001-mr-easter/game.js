@@ -257,7 +257,7 @@ const PUZZLES = {
       {
         buttonLabel: 'Search the Area',
         iframeSrc: '/Navigation_DirectionMaze_001.html',
-        hint_1: 'The map item in your sack shows where the traps are placed.',
+        hint_1: 'Navigate ● to ★ by tapping adjacent cells. The map item in your sack shows where the traps are.',
         hint_2: 'Safe path: R, D, R, D, D, R, D, R, R, D, R',
         devAnswer: 'Safe path: Right, Down, Right, Down, Down, Right, Down, Right, Right, Down, Right',
         config: {
