@@ -1,35 +1,14 @@
 // components/PuzzleCard.js
-// DESTINATION: games/001-mr-easter/components/
-//
-// Chat UI for a single active stage. Renders story messages with typing animation.
-// Manages the context bar at the bottom — this bar is DYNAMIC and changes based on state:
-//   - Drawer closed  → one button per unsolved puzzle (storyPuzzle + geoPuzzle)
-//   - Drawer open    → one SUBMIT button that fires PUZZLE_SUBMIT into the iframe
-//   - Future states  → character dialogue options, event choices, etc.
-//
-// SUB-PUZZLE PERSISTENCE (bitmask via puzzle_index in stage_progress):
-//   Bit 1 = story puzzle solved, Bit 2 = geo puzzle solved
-//   Written to DB on each sub-puzzle completion via /api/save-progress
-//   Read back on session resume via initialPuzzleMask prop from [slug].js
-//   This means closing/refreshing never loses partial progress within a stage
-//
-// SOLVE CHAIN:
-//   PuzzleDrawer gets PUZZLE_SOLVED from iframe
-//   → fires onPuzzleSolved
-//   → PuzzleCard.handlePuzzleSolved(type) updates local + DB state
-//   → if ALL present puzzles done → onSolved(stage) fires to parent [slug].js
-//   bothSolved checks only puzzles that EXIST for this stage (not hardcoded to both)
-//
-// IMPORTANT — DO NOT:
-//   - Put submit buttons inside iframe HTML files (submit lives here in context bar)
-//   - Hardcode bothSolved as storyDone && geoDone (breaks single-puzzle stages)
-//   - Remove initialPuzzleMask prop (needed for session resume)
+// Chat UI for a single stage. Story messages animate in.
+// NO question in chat — puzzles are triggered via action buttons.
+// Hints live in the puzzle drawer, not here.
 
 import { useState, useEffect, useRef } from 'react'
 import styles from './PuzzleCard.module.css'
 import { DEV_MODE } from '../../../lib/devConfig'
 import PuzzleDrawer from './PuzzleDrawer'
-import { getStoryPuzzle, getGeoPuzzle, getStage } from '../game'
+import PuzzlePanel from './PuzzlePanel'
+import { getStoryPuzzle, getGeoPuzzle } from '../game'
 
 const SENDER_STYLES = {
   'Mr Easter':   { initial: 'E', color: styles.avatarBlue },
@@ -52,11 +31,10 @@ export default function PuzzleCard({
   sessionId,
   onSolved,
   onHintUsed,
-  onPuzzleCompleted,
   puzzlesSolved = 0,
   puzzlesTotal = 2,
-  headerOffset = 56,
-  initialPuzzleMask = 0,   // nav only — drawer covers game header for max puzzle height
+  headerOffset = 120,
+  onPuzzlePanelRef,
 }) {
   // Story messages only — no question in chat
   const storyMessages = (puzzle.messages || []).filter(m => !m.isQuestion)
@@ -65,16 +43,12 @@ export default function PuzzleCard({
     // DEV_MODE: show all story messages immediately, skip animation
     if (DEV_MODE && status === 'active') {
       return storyMessages.map((m, i) => ({
-        ...m,
-        id: `story-${i}`,
-        from: m.from || (m.type === 'event' ? 'event' : 'contact'),
+        id: `story-${i}`, from: 'contact', sender: m.sender, text: m.text
       }))
     }
     if (status === 'locked' || status === 'active') return []
     const msgs = storyMessages.map((m, i) => ({
-      ...m,
-      id: `story-${i}`,
-      from: m.from || (m.type === 'event' ? 'event' : 'contact'),
+      id: `story-${i}`, from: 'contact', sender: m.sender, text: m.text
     }))
     if (status === 'solved') {
       msgs.push({ id: 'solved-msg', from: 'system', text: '✓ Stage complete' })
@@ -87,22 +61,21 @@ export default function PuzzleCard({
   const [showButtons, setShowButtons] = useState(DEV_MODE ? status === 'active' : false)
   const [isOpen, setIsOpen]         = useState(status !== 'locked')
   const [activeDrawer, setActiveDrawer] = useState(null) // 'story' | 'geo' | null
-  const [submitFn, setSubmitFn] = useState(null)
-  // storyIndex tracks which story puzzle is current (0, 1, 2...)
-  // initialPuzzleMask lower bits store storyIndex, bit 8 = geo done
-  const [storyIndex, setStoryIndex]       = useState(() => initialPuzzleMask & 0xFF)
-  const [geoPuzzleSolved, setGeoPuzzleSolved] = useState(() => Boolean(initialPuzzleMask & 0x100))
+  const [storyPuzzleSolved, setStoryPuzzleSolved] = useState(false)
+  const [geoPuzzleSolved, setGeoPuzzleSolved]     = useState(false)
+  const [puzzlePanelOpen, setPuzzlePanelOpen]     = useState(false)
+
+  // Expose openPuzzlePanel to parent (GameHeader puzzle button)
+  useEffect(() => {
+    if (onPuzzlePanelRef) onPuzzlePanelRef(() => setPuzzlePanelOpen(true))
+  }, [onPuzzlePanelRef])
 
   const bottomRef    = useRef(null)
   const didAnimate   = useRef(false)
   const prevMsgCount = useRef(0)
-  const onSolvedRef  = useRef(onSolved)  // ref so stale closure never silently drops the call
-  useEffect(() => { onSolvedRef.current = onSolved }, [onSolved])
 
   // Look up puzzle definitions for this stage
-  const storyPuzzle   = getStoryPuzzle(puzzle.stage, storyIndex)
-  const storyPoolSize  = getStage(puzzle.stage)?.storyPool?.length || 1
-  const storyAllDone   = storyIndex >= storyPoolSize
+  const storyPuzzle = getStoryPuzzle(puzzle.stage)
   const geoPuzzle   = getGeoPuzzle(puzzle.stage)
 
   function typingDelay(text) {
@@ -153,7 +126,7 @@ export default function PuzzleCard({
       await new Promise(r => setTimeout(r, 1200 + Math.random() * 800))
       for (let i = 0; i < storyMessages.length; i++) {
         const m = storyMessages[i]
-        await pushMessage({ ...m, from: m.from || (m.type === 'event' ? 'event' : 'contact') })
+        await pushMessage({ from: 'contact', sender: m.sender, text: m.text })
         if (i < storyMessages.length - 1) await pause(m.text)
       }
       setShowButtons(true)
@@ -174,29 +147,12 @@ export default function PuzzleCard({
       solved: true,
     }])
 
-    const newStoryIndex = type === 'story' ? storyIndex + 1 : storyIndex
-    const newGeoDone    = type === 'geo'   ? true : geoPuzzleSolved
+    if (type === 'story') setStoryPuzzleSolved(true)
+    if (type === 'geo') setGeoPuzzleSolved(true)
 
-    if (type === 'story') setStoryIndex(newStoryIndex)
-    if (type === 'geo')   setGeoPuzzleSolved(true)
-
-    // mask: lower byte = storyIndex, bit 8 = geo done
-    const newMask = (newStoryIndex & 0xFF) | (newGeoDone ? 0x100 : 0)
-    if (sessionId) {
-      fetch('/api/save-progress', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, stage: puzzle.stage, puzzleMask: newMask, elapsedSeconds: 0 }),
-      }).catch(err => console.error('[PuzzleCard] save-progress failed:', err))
-    }
-
-    if (onPuzzleCompleted) onPuzzleCompleted()
-
-    const storyAllDoneNow = newStoryIndex >= storyPoolSize
-    const geoRequired     = Boolean(geoPuzzle)
-    const bothSolved      = storyAllDoneNow && (!geoRequired || newGeoDone)
+    const bothSolved = type === 'story' ? geoPuzzleSolved : storyPuzzleSolved
     if (bothSolved) {
-      setTimeout(() => onSolvedRef.current?.(puzzle.stage, null), 800)
+      setTimeout(() => onSolved(puzzle.stage, null), 800)
     }
   }
 
@@ -236,16 +192,6 @@ export default function PuzzleCard({
       {/* Messages */}
       <div className={styles.messageList}>
         {messages.map((msg, i) => {
-          if (msg.type === 'event') {
-            return (
-              <div key={msg.id || i} className={styles.eventLine}>
-                <span className={styles.eventBracket}>[</span>
-                <span className={styles.eventText}>{msg.text}</span>
-                <span className={styles.eventBracket}>]</span>
-              </div>
-            )
-          }
-
           if (msg.from === 'system') {
             return (
               <div key={msg.id || i} className={styles.systemBox}>
@@ -286,49 +232,44 @@ export default function PuzzleCard({
         <div ref={bottomRef} />
       </div>
 
-      {/* ── Context bar — dynamic based on game state ── */}
+      {/* Fixed bottom puzzle buttons — stay for future use */}
       {status !== 'solved' && showButtons && (
         <div className={styles.inputArea}>
-          {activeDrawer ? (
-            // Drawer open — submit button fires into the iframe
-            <button
-              className={styles.submitBtn}
-              onClick={() => submitFn && submitFn()}
-            >
-              {activeDrawer === 'story'
-                ? (storyPuzzle?.submitLabel || 'Submit')
-                : (geoPuzzle?.submitLabel  || 'Submit')}
-            </button>
-          ) : (
-            // Two buttons — story (current index) and geo. Label updates as puzzles are solved.
-            <div className={styles.puzzleButtons}>
-              {storyPuzzle && !storyAllDone && (
-                <button
-                  className={styles.puzzleBtn}
-                  onClick={() => setActiveDrawer('story')}
-                >
-                  🔍 {storyPuzzle.buttonLabel}
-                </button>
-              )}
-              {storyAllDone && storyPuzzle && (
-                <button className={`${styles.puzzleBtn} ${styles.puzzleBtnSolved}`} disabled>
-                  ✓ {storyPuzzle.buttonLabel}
-                </button>
-              )}
-              {geoPuzzle && (
-                <button
-                  className={`${styles.puzzleBtn} ${geoPuzzleSolved ? styles.puzzleBtnSolved : ''}`}
-                  onClick={() => !geoPuzzleSolved && setActiveDrawer('geo')}
-                  disabled={geoPuzzleSolved}
-                >
-                  {geoPuzzleSolved ? '✓ ' : '🗺 '}
-                  {geoPuzzle.buttonLabel}
-                </button>
-              )}
-            </div>
-          )}
+          <div className={styles.puzzleButtons}>
+            {storyPuzzle && (
+              <button
+                className={`${styles.puzzleBtn} ${storyPuzzleSolved ? styles.puzzleBtnSolved : ''}`}
+                onClick={() => !storyPuzzleSolved && setActiveDrawer('story')}
+                disabled={storyPuzzleSolved}
+              >
+                {storyPuzzleSolved ? '✓ ' : '📄 '}
+                {storyPuzzle.buttonLabel}
+              </button>
+            )}
+            {geoPuzzle && (
+              <button
+                className={`${styles.puzzleBtn} ${geoPuzzleSolved ? styles.puzzleBtnSolved : ''}`}
+                onClick={() => !geoPuzzleSolved && setActiveDrawer('geo')}
+                disabled={geoPuzzleSolved}
+              >
+                {geoPuzzleSolved ? '✓ ' : '🗺 '}
+                {geoPuzzle.buttonLabel}
+              </button>
+            )}
+          </div>
         </div>
       )}
+
+      {/* Puzzle panel — slide-in grid opened via GameHeader 🧩 button */}
+      <PuzzlePanel
+        isOpen={puzzlePanelOpen}
+        onClose={() => setPuzzlePanelOpen(false)}
+        storyPuzzle={storyPuzzle}
+        geoPuzzle={geoPuzzle}
+        storyPuzzleSolved={storyPuzzleSolved}
+        geoPuzzleSolved={geoPuzzleSolved}
+        onSelectPuzzle={key => { setPuzzlePanelOpen(false); setActiveDrawer(key) }}
+      />
 
       {/* Story puzzle drawer */}
       {storyPuzzle && (
@@ -341,8 +282,6 @@ export default function PuzzleCard({
           puzzlesSolved={puzzlesSolved}
           puzzlesTotal={puzzlesTotal}
           headerOffset={headerOffset}
-          inputOffset={80}
-          onSubmitReady={fn => setSubmitFn(() => fn)}
           onPuzzleSolved={() => {
             setActiveDrawer(null)
             handlePuzzleSolved('story')
@@ -361,8 +300,6 @@ export default function PuzzleCard({
           puzzlesSolved={puzzlesSolved}
           puzzlesTotal={puzzlesTotal}
           headerOffset={headerOffset}
-          inputOffset={80}
-          onSubmitReady={fn => setSubmitFn(() => fn)}
           onPuzzleSolved={() => {
             setActiveDrawer(null)
             handlePuzzleSolved('geo')
