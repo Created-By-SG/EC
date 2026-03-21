@@ -4,7 +4,7 @@
 // Items use upsert to prevent duplicates if multiple players trigger simultaneously.
 
 import { supabaseAdmin } from '../../lib/supabase'
-import { ITEMS } from '../../games/001-mr-easter/items/index'
+import { ITEMS } from '../../games/001-mr-easter/items'
 import { getPoolSize } from '../../games/001-mr-easter/game'
 
 export default async function handler(req, res) {
