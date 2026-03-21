@@ -44,7 +44,7 @@ body{
   display:flex;justify-content:center;align-items:flex-end;gap:16px;
   padding:clamp(10px,2dvh,16px) 20px clamp(10px,2dvh,14px);
   background:#020408;
-  height:clamp(115px,23dvh,161px);
+  height:40dvh;
   flex-shrink:1;min-height:0;
 }
 .vu-ch{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;}
@@ -52,8 +52,8 @@ body{
   width:22px;flex:1;
   background:rgba(255,255,255,0.04);
   border:1px solid var(--border);border-radius:3px;overflow:hidden;
-  display:flex;flex-direction:column;justify-content:flex-end;
   position:relative;
+  height:100%;
 }
 .vu-target{
   position:absolute;left:0;right:0;height:2px;
@@ -163,7 +163,7 @@ function buildVU() {
     const col = document.createElement('div')
     col.className = 'vu-ch'
     col.innerHTML = `
-      <div class="vu-bar-wrap" style="flex:1;min-height:0;">
+      <div class="vu-bar-wrap">
         <div class="vu-target" id="vt-${i}" style="bottom:${ch.target}%"></div>
         <div class="vu-fill" id="vf-${i}" style="height:50%;background:${ch.color}40"></div>
       </div>
