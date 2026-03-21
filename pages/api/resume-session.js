@@ -1,8 +1,20 @@
 // pages/api/resume-session.js
-// Restores a session from Supabase using sessionId.
-// Used both for tab resume and for additional players joining the same session.
-// Returns full state — progress, items, timer — so all screens stay in sync.
-// GET /api/resume-session?sessionId=xxx
+// DESTINATION: pages/api/
+//
+// Restores a full session from Supabase. Used on tab resume AND when additional
+// players join the same session via share link.
+// Returns everything needed to reconstruct game state client-side.
+//
+// RETURNS:
+//   progressData  — { [stage]: 'active'|'locked'|'solved' }
+//   puzzleMasks   — { [stage]: bitmask } where bit1=story done, bit2=geo done
+//                   Used by PuzzleCard to restore sub-puzzle state without replaying
+//   elapsedSeconds — calculated from started_at, not stored (always accurate)
+//   collectedItems — full item list for inventory
+//
+// IMPORTANT — DO NOT:
+//   - Remove puzzleMasks from response (PuzzleCard needs it to restore partial progress)
+//   - Store elapsedSeconds in DB and read it back (always recalculate from started_at)
 
 import { supabaseAdmin } from '../../lib/supabase'
 
