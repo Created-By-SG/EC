@@ -1,0 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+  /* Blue accent system */
+  --accent: #3B82F6;
+  --accent-dark: #1D4ED8;
+  --accent-light: #93C5FD;
+  --accent-dim: rgba(59,130,246,0.15);
+  --accent-border: rgba(59,130,246,0.3);
+  --accent-deep: #0A1628;
+
+  /* Success / error */
+  --teal: #10B981;
+  --teal-dark: #065F46;
+  --red: #EF4444;
+
+  /* Navy background layers */
+  --bg:  #080E1A;
+  --bg2: #0D1526;
+  --bg3: #131E33;
+  --bg4: #1A2840;
+
+  /* Borders */
+  --border:  rgba(59,130,246,0.1);
+  --border2: rgba(59,130,246,0.22);
+  --border3: rgba(255,255,255,0.06);
+
+  /* Text */
+  --text:  #F0F4FF;
+  --muted: #6B7A99;
+  --muted2: #4A5568;
+
+  /* Fonts */
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --font-body: 'DM Sans', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+input {
+  font-family: var(--font-body);
+}

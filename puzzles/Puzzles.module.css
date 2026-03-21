@@ -1,0 +1,552 @@
+/* puzzles/Puzzles.module.css
+   Shared styles for all puzzle template components.
+   Used by: Input_LetterDrums_001, Input_NumberDials_001,
+            Sequence_FuseBox_001, Liquid_PotionMixer_001, Readable_Scroll_001
+*/
+
+/* ── Shared wrapper ─────────────────────────────────────────────── */
+.puzzleWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 16px;
+  width: 100%;
+}
+
+/* ── Solved state ───────────────────────────────────────────────── */
+.solvedBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 28px 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  text-align: center;
+  width: 100%;
+}
+
+.solvedTitle {
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #6fcf8a;
+  font-weight: 600;
+}
+
+.solvedMsg {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.5;
+}
+
+/* ── Shared buttons ─────────────────────────────────────────────── */
+.submitBtn {
+  padding: 10px 28px;
+  background: #fff;
+  color: #0a0a0a;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.submitBtn:hover {
+  opacity: 0.85;
+}
+
+.resetBtn {
+  padding: 7px 18px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.resetBtn:hover {
+  color: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+/* ── Letter Drums ───────────────────────────────────────────────── */
+.drums {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.drumWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.drumArrow {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.65rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  transition: color 0.15s;
+}
+
+.drumArrow:hover {
+  color: #fff;
+}
+
+.drum {
+  width: 44px;
+  height: 36px;
+  overflow: hidden;
+  position: relative;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.drumInner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  transition: transform 0.15s ease;
+}
+
+.drumCell {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.05em;
+}
+
+.drumCellActive {
+  color: #fff;
+}
+
+.drumLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  pointer-events: none;
+}
+
+/* ── Number Dials ───────────────────────────────────────────────── */
+.dials {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.dial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.dialBtn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.65rem;
+  cursor: pointer;
+  padding: 2px 8px;
+  transition: color 0.15s;
+}
+
+.dialBtn:hover {
+  color: #fff;
+}
+
+.dialDigit {
+  width: 44px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
+/* ── Fuse Box ───────────────────────────────────────────────────── */
+.fuseBox {
+  width: 100%;
+  max-width: 400px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.fuseTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.fuseTitle {
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.powerLight {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  transition: background 0.2s;
+}
+
+.powerOn {
+  background: #6fcf8a;
+  box-shadow: 0 0 6px #6fcf8a;
+}
+
+.powerFail {
+  background: #cf6f6f;
+  box-shadow: 0 0 6px #cf6f6f;
+}
+
+.fusesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.fuseItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  background: #0f1117;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.fuseItem:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.fuseLbl {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+}
+
+.fuseTrack {
+  width: 28px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.fuseTrackOn {
+  background: rgba(111, 207, 138, 0.25);
+}
+
+.fuseKnob {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transition: top 0.2s, background 0.2s;
+}
+
+.fuseKnobUp {
+  top: 4px;
+  background: #6fcf8a;
+}
+
+.fuseKnobDown {
+  top: 24px;
+}
+
+.fuseNum {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  height: 12px;
+}
+
+.seqTrack {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.seqDot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.3);
+  transition: background 0.2s, color 0.2s;
+}
+
+.seqDotDone {
+  background: rgba(111, 207, 138, 0.15);
+  border-color: rgba(111, 207, 138, 0.4);
+  color: #6fcf8a;
+}
+
+.seqDotBad {
+  background: rgba(207, 111, 111, 0.15);
+  border-color: rgba(207, 111, 111, 0.4);
+  color: #cf6f6f;
+}
+
+/* ── Potion Mixer ───────────────────────────────────────────────── */
+.targetRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.targetLabel {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.targetSwatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.targetName {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.vialsRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  justify-content: center;
+}
+
+.vialCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.vialOuter {
+  width: 36px;
+  height: 90px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.vialFill {
+  width: 100%;
+  transition: height 0.2s;
+}
+
+.vialBtn {
+  width: 36px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.vialBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.vialLbl {
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.vDivider {
+  width: 1px;
+  height: 90px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.mixCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.mixOuter {
+  width: 36px;
+  height: 90px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.mixFill {
+  width: 100%;
+  transition: height 0.2s, background 0.2s;
+}
+
+.mixLbl {
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Readable Scroll ────────────────────────────────────────────── */
+.scrollOuter {
+  width: 100%;
+  cursor: pointer;
+  user-select: none;
+}
+
+.scrollClosed {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.scrollClosed:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.scrollIcon {
+  font-size: 1rem;
+}
+
+.scrollClosedLbl {
+  flex: 1;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.scrollChevron {
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.3);
+  transition: transform 0.2s;
+  display: inline-block;
+}
+
+.scrollChevronOpen {
+  transform: rotate(180deg);
+}
+
+.scrollContent {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.scrollContentOpen {
+  max-height: 600px;
+}
+
+.scrollPaper {
+  padding: 20px 18px;
+  background: rgba(255, 248, 220, 0.06);
+  border: 1px solid rgba(255, 248, 220, 0.1);
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+}
+
+.scrollPaperTitle {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 248, 220, 0.8);
+  margin-bottom: 12px;
+}
+
+.scrollPaperText {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: rgba(255, 248, 220, 0.65);
+  white-space: pre-line;
+}
+
+.scrollPaperSig {
+  margin-top: 16px;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: rgba(255, 248, 220, 0.4);
+}
+
+.seqDotWrong {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #fca5a5;
+}

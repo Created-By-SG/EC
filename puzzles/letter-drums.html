@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#080E1A;--bg2:#0D1526;--bg3:#131E33;--bg4:#1A2840;
+  --accent:#3B82F6;--accent-light:#93C5FD;--accent-dim:rgba(59,130,246,0.15);--accent-border:rgba(59,130,246,0.3);
+  --teal:#10B981;--red:#EF4444;
+  --border:rgba(59,130,246,0.1);--border2:rgba(59,130,246,0.22);
+  --text:#F0F4FF;--muted:#6B7A99;
+  --font-mono:'DM Mono',monospace;--font-body:'DM Sans',sans-serif;
+}
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap');
+html,body{background:var(--bg);color:var(--text);font-family:var(--font-body);height:100%;overflow:hidden;}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:24px;min-height:100vh;}
+
+.drums{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+.drum-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.drum-arrow{background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;padding:4px 10px;transition:color 0.15s;border-radius:4px;}
+.drum-arrow:hover{color:var(--text);background:var(--bg3);}
+.drum{width:48px;height:40px;overflow:hidden;position:relative;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;}
+.drum.wrong{border-color:rgba(239,68,68,0.5);animation:shake 0.35s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.drum-inner{position:absolute;top:0;left:0;width:100%;transition:transform 0.15s ease;}
+.drum-cell{height:40px;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:1.2rem;font-weight:500;color:rgba(255,255,255,0.25);}
+.drum-cell.active{color:var(--text);}
+
+.submit-btn{padding:11px 32px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:var(--font-mono);font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:background 0.15s;width:100%;max-width:280px;}
+.submit-btn:hover{background:#2563eb;}
+.submit-btn.wrong{background:rgba(239,68,68,0.6);}
+.reset-btn{background:none;border:1px solid var(--border2);border-radius:8px;color:var(--muted);font-family:var(--font-mono);font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:8px 20px;cursor:pointer;transition:color 0.15s,border-color 0.15s;}
+.reset-btn:hover{color:var(--text);border-color:var(--accent-border);}
+
+.solved-box{display:none;flex-direction:column;align-items:center;gap:10px;padding:28px 20px;background:var(--bg3);border:1px solid rgba(16,185,129,0.3);border-radius:12px;text-align:center;width:100%;max-width:320px;}
+.solved-box.show{display:flex;}
+.solved-title{font-family:var(--font-mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);}
+.solved-msg{font-size:14px;color:var(--muted);line-height:1.6;}
+</style>
+</head>
+<body>
+
+<div class="drums" id="drums"></div>
+<button class="submit-btn" id="submitBtn" onclick="submit()">Unlock</button>
+<button class="reset-btn" onclick="resetDrums()">Reset</button>
+<div class="solved-box" id="solvedBox">
+  <div class="solved-title">Unlocked</div>
+  <div class="solved-msg" id="solvedMsg"></div>
+</div>
+
+<script>
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')
+let config = { answer: ['E','C'], scramble: ['A','B'], solvedMessage: 'Correct.' }
+let positions = []
+let solved = false
+let wrongTimer = null
+
+window.addEventListener('message', e => {
+  if (e.data?.type === 'PUZZLE_CONFIG') { config = e.data.config; init() }
+})
+
+function init() {
+  positions = config.scramble.map(l => {
+    const idx = LETTERS.indexOf(l.toUpperCase())
+    return (idx === -1 ? 0 : idx) + 26
+  })
+  render()
+}
+
+function render() {
+  const c = document.getElementById('drums')
+  c.innerHTML = ''
+  positions.forEach((pos, ri) => {
+    const ext = [...LETTERS, ...LETTERS, ...LETTERS]
+    const wrap = document.createElement('div')
+    wrap.className = 'drum-wrap'
+    wrap.innerHTML = `
+      <button class="drum-arrow" onclick="spin(${ri},-1)">▲</button>
+      <div class="drum" id="drum-${ri}">
+        <div class="drum-inner" id="inner-${ri}" style="transform:translateY(${-pos*40}px)">
+          ${ext.map((l,i) => `<div class="drum-cell${i===pos?' active':''}">${l}</div>`).join('')}
+        </div>
+      </div>
+      <button class="drum-arrow" onclick="spin(${ri},1)">▼</button>`
+    c.appendChild(wrap)
+  })
+}
+
+function spin(ri, dir) {
+  if (solved) return
+  const ext = [...LETTERS, ...LETTERS, ...LETTERS]
+  positions[ri] = ((positions[ri] + dir - 26 + 78) % 26) + 26
+  const inner = document.getElementById(`inner-${ri}`)
+  inner.style.transform = `translateY(${-positions[ri]*40}px)`
+  inner.querySelectorAll('.drum-cell').forEach((cell, i) => {
+    cell.classList.toggle('active', i === positions[ri])
+  })
+}
+
+function submit() {
+  if (solved) return
+  const correct = config.answer.every((v, i) =>
+    LETTERS[positions[i] % 26] === v.toString().toUpperCase()
+  )
+  if (correct) {
+    solved = true
+    document.getElementById('solvedMsg').textContent = config.solvedMessage
+    document.getElementById('solvedBox').classList.add('show')
+    document.getElementById('submitBtn').style.display = 'none'
+    document.getElementById('drums').style.opacity = '0.4'
+    window.parent.postMessage({ type: 'PUZZLE_SOLVED' }, '*')
+  } else {
+    const btn = document.getElementById('submitBtn')
+    btn.classList.add('wrong')
+    document.querySelectorAll('.drum').forEach(d => d.classList.add('wrong'))
+    clearTimeout(wrongTimer)
+    wrongTimer = setTimeout(() => {
+      btn.classList.remove('wrong')
+      document.querySelectorAll('.drum').forEach(d => d.classList.remove('wrong'))
+    }, 600)
+    window.parent.postMessage({ type: 'PUZZLE_WRONG' }, '*')
+  }
+}
+
+function resetDrums() {
+  if (solved) return
+  positions = config.scramble.map(l => {
+    const idx = LETTERS.indexOf(l.toUpperCase())
+    return (idx === -1 ? 0 : idx) + 26
+  })
+  render()
+}
+
+init()
+</script>
+</body>
+</html>

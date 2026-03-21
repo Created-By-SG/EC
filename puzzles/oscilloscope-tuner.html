@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#080E1A;--bg3:#131E33;--bg4:#1A2840;
+  --accent:#3B82F6;--accent-light:#93C5FD;--teal:#10B981;--red:#EF4444;
+  --border:rgba(59,130,246,0.1);--border2:rgba(59,130,246,0.22);
+  --text:#F0F4FF;--muted:#6B7A99;
+  --font-mono:'DM Mono',monospace;--font-body:'DM Sans',sans-serif;
+}
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap');
+html,body{background:var(--bg);color:var(--text);font-family:var(--font-body);height:100%;overflow:hidden;}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:20px;min-height:100vh;}
+
+.scope-display{width:100%;max-width:340px;height:100px;background:#020509;border:1px solid var(--border2);border-radius:8px;position:relative;overflow:hidden;}
+.scope-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(59,130,246,0.08) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.08) 1px,transparent 1px);background-size:20px 20px;}
+.scope-canvas{position:absolute;inset:0;width:100%;height:100%;}
+
+.controls{width:100%;max-width:340px;display:flex;flex-direction:column;gap:16px;}
+.ctrl-row{display:flex;align-items:center;gap:12px;}
+.ctrl-lbl{font-family:var(--font-mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);width:50px;flex-shrink:0;}
+.ctrl-slider{flex:1;-webkit-appearance:none;height:4px;background:var(--bg3);border-radius:2px;outline:none;border:1px solid var(--border2);}
+.ctrl-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--bg);}
+.ctrl-readout{font-family:var(--font-mono);font-size:12px;color:var(--accent-light);width:44px;text-align:right;flex-shrink:0;}
+
+.submit-btn{padding:11px 32px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:var(--font-mono);font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:background 0.15s;width:100%;max-width:340px;}
+.submit-btn:hover{background:#2563eb;}
+.feedback{font-family:var(--font-mono);font-size:11px;color:var(--red);text-align:center;min-height:16px;}
+
+.solved-box{display:none;flex-direction:column;align-items:center;gap:10px;padding:28px 20px;background:var(--bg3);border:1px solid rgba(16,185,129,0.3);border-radius:12px;text-align:center;width:100%;max-width:320px;}
+.solved-box.show{display:flex;}
+.solved-title{font-family:var(--font-mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);}
+.solved-msg{font-size:14px;color:var(--muted);line-height:1.6;}
+</style>
+</head>
+<body>
+
+<div class="scope-display">
+  <div class="scope-grid"></div>
+  <canvas class="scope-canvas" id="scopeCanvas"></canvas>
+</div>
+
+<div class="controls">
+  <div class="ctrl-row">
+    <span class="ctrl-lbl">Freq</span>
+    <input type="range" class="ctrl-slider" id="freqSlider" min="50" max="150" value="60" oninput="draw()">
+    <span class="ctrl-readout" id="freqOut">60</span>
+  </div>
+  <div class="ctrl-row">
+    <span class="ctrl-lbl">Amp</span>
+    <input type="range" class="ctrl-slider" id="ampSlider" min="10" max="100" value="30" oninput="draw()">
+    <span class="ctrl-readout" id="ampOut">30</span>
+  </div>
+</div>
+
+<button class="submit-btn" id="submitBtn" onclick="checkTuner()">Lock Signal</button>
+<div class="feedback" id="feedback"></div>
+
+<div class="solved-box" id="solvedBox">
+  <div class="solved-title" id="solvedTitle">Signal Locked</div>
+  <div class="solved-msg" id="solvedMsg"></div>
+</div>
+
+<script>
+let config = {
+  targetFreq: 104,
+  targetAmp: 70,
+  freqMin: 50, freqMax: 150,
+  ampMin: 10, ampMax: 100,
+  tolerance: 2,
+  solvedTitle: 'Signal Locked',
+  solvedMessage: 'Frequencies aligned. Signal decrypted.',
+}
+let solved = false
+
+window.addEventListener('message', e => {
+  if (e.data?.type === 'PUZZLE_CONFIG') { config = { ...config, ...e.data.config }; init() }
+})
+
+function init() {
+  const fs = document.getElementById('freqSlider')
+  const as = document.getElementById('ampSlider')
+  fs.min = config.freqMin; fs.max = config.freqMax; fs.value = config.freqMin
+  as.min = config.ampMin; as.max = config.ampMax; as.value = config.ampMin
+  draw()
+}
+
+function draw() {
+  const canvas = document.getElementById('scopeCanvas')
+  const ctx = canvas.getContext('2d')
+  canvas.width = canvas.offsetWidth
+  canvas.height = canvas.offsetHeight
+  const W = canvas.width, H = canvas.height, mid = H / 2
+
+  const f = parseFloat(document.getElementById('freqSlider').value)
+  const a = parseFloat(document.getElementById('ampSlider').value)
+  document.getElementById('freqOut').textContent = f
+  document.getElementById('ampOut').textContent = a
+
+  ctx.clearRect(0, 0, W, H)
+
+  // Target wave (dim)
+  ctx.strokeStyle = 'rgba(16,185,129,0.25)'
+  ctx.lineWidth = 1.5
+  ctx.beginPath()
+  for (let x = 0; x <= W; x++) {
+    const y = mid + Math.sin(x * config.targetFreq * 0.015) * (config.targetAmp * 0.35)
+    x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
+  }
+  ctx.stroke()
+
+  // Player wave
+  ctx.strokeStyle = 'rgba(59,130,246,0.9)'
+  ctx.lineWidth = 2
+  ctx.beginPath()
+  for (let x = 0; x <= W; x++) {
+    const y = mid + Math.sin(x * f * 0.015) * (a * 0.35)
+    x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)
+  }
+  ctx.stroke()
+
+  document.getElementById('feedback').textContent = ''
+}
+
+function checkTuner() {
+  if (solved) return
+  const f = parseFloat(document.getElementById('freqSlider').value)
+  const a = parseFloat(document.getElementById('ampSlider').value)
+  const tol = config.tolerance ?? 2
+  if (Math.abs(f - config.targetFreq) <= tol && Math.abs(a - config.targetAmp) <= tol) {
+    solved = true
+    document.getElementById('solvedTitle').textContent = config.solvedTitle || 'Signal Locked'
+    document.getElementById('solvedMsg').textContent = config.solvedMessage
+    document.getElementById('solvedBox').classList.add('show')
+    document.getElementById('submitBtn').style.display = 'none'
+    window.parent.postMessage({ type: 'PUZZLE_SOLVED' }, '*')
+  } else {
+    document.getElementById('feedback').textContent = 'Static noise — frequencies do not align.'
+    window.parent.postMessage({ type: 'PUZZLE_WRONG' }, '*')
+  }
+}
+
+window.addEventListener('resize', draw)
+init()
+</script>
+</body>
+</html>
