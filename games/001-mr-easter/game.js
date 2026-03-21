@@ -212,65 +212,84 @@ const PUZZLES = {
   //
   // Geo: Direction Maze — 7x7, trap-heavy, needs the map item to solve safely
   1: {
+    // Three narrative puzzles — shown one at a time via storyIndex in PuzzleCard
+    // Solve puzzle 0 → puzzle 1 appears → solve → puzzle 2 → solve → story done
+    //
+    // WHY THERE IS NO CHAIN MECHANIC HERE — READ BEFORE CHANGING
+    //
+    // A chain mechanic was tried (chain: [...steps] inside a single storyPool entry).
+    // It broke save/resume in a way that was very hard to debug. Here is why:
+    //
+    // The chain kept all 3 puzzles inside one PuzzleDrawer instance.
+    // PuzzleDrawer managed chainStep internally with local state.
+    // When the drawer closed, that local state was destroyed.
+    // save-progress was only called at the END of the full chain completing —
+    // meaning if a player solved puzzle 1 of 3 and closed the drawer (or the
+    // browser crashed, or the session resumed), they had to start from puzzle 1
+    // again. The progress was invisible to Supabase until all 3 were done.
+    //
+    // A chain WOULD make sense if puzzles were designed to repeat on failure —
+    // e.g. a bomb defusal where wrong answer resets the whole sequence.
+    // That is not this game. Each puzzle here is a one-time solve.
+    //
+    // The correct pattern is storyPool with multiple entries + storyIndex in PuzzleCard.
+    // Each solve increments storyIndex, writes the mask to Supabase immediately,
+    // and the next puzzle appears. Resuming restores storyIndex from the mask.
+    // Each puzzle is independently saved the moment it is solved.
     storyPool: [
       {
         buttonLabel: 'Fix the Electrical Board',
-        isChain: true,
-        chain: [
-          {
-            iframeSrc: '/Sequence_WireConnections_001.html',
-            stepLabel: 'Rewire the Board',
-            hint_1: 'Each wire colour matches a character initial. Check the items in your sack.',
-            hint_2: 'Red=F  Blue=M  Green=P  Yellow=L  Orange=C  Purple=B  White=K  Cyan=H',
-            devAnswer: 'Red→F  Blue→M  Green→P  Yellow→L  Orange→C  Purple→B  White→K  Cyan→H',
-            config: {
-              pairs: [
-                { wire: 'Red',    color: '#c0392b', terminal: 'F', terminalLabel: 'Terminal F' },
-                { wire: 'Blue',   color: '#5dcedf', terminal: 'M', terminalLabel: 'Terminal M' },
-                { wire: 'Green',  color: '#27ae60', terminal: 'P', terminalLabel: 'Terminal P' },
-                { wire: 'Yellow', color: '#f1c40f', terminal: 'L', terminalLabel: 'Terminal L' },
-                { wire: 'Orange', color: '#e67e22', terminal: 'C', terminalLabel: 'Terminal C' },
-                { wire: 'Purple', color: '#8e44ad', terminal: 'B', terminalLabel: 'Terminal B' },
-                { wire: 'White',  color: '#ecf0f1', terminal: 'K', terminalLabel: 'Terminal K' },
-                { wire: 'Cyan',   color: '#1abc9c', terminal: 'H', terminalLabel: 'Terminal H' },
-              ],
-              solvedTitle: 'Board Rewired',
-              solvedMessage: 'All circuits connected. The speaker system has power.',
-            },
-          },
-          {
-            iframeSrc: '/Input_PoliceScanner_001.html',
-            submitLabel: 'Intercept Signal',
-            stepLabel: 'Tune the Scanner',
-            hint_1: 'Both channels must be correct at the same time. Check your items for the values.',
-            hint_2: 'Frequency: 73 Hz. Amplitude: 42%.',
-            devAnswer: 'Frequency: 73 Hz  |  Amplitude: 42%',
-            config: {
-              targetFreq: 73,
-              targetAmp: 42,
-              tolerance: 1,
-              solvedTitle: 'Signal Intercepted',
-              solvedMessage: 'Broadcast channel open. Ready to transmit.',
-            },
-          },
-          {
-            iframeSrc: '/Input_SoundCalibration_001.html',
-            submitLabel: 'Broadcast',
-            stepLabel: 'Calibrate Output',
-            hint_1: 'Align each bar to the orange marker on the VU meter.',
-            devAnswer: 'Left=65  Centre=40  Right=55  (align bars to orange markers)',
-            config: {
-              channels: [
-                { label: 'L', target: 65, color: '#3B82F6' },
-                { label: 'C', target: 40, color: '#10B981' },
-                { label: 'R', target: 55, color: '#F59E0B' },
-              ],
-              tolerance: 3,
-              solvedTitle: 'Signal Broadcast',
-              solvedMessage: 'The loudspeaker crackles to life across the park. Someone responds with a major clue.',
-            },
-          },
-        ],
+        submitLabel: 'Submit Wiring',
+        iframeSrc: '/Sequence_WireConnections_001.html',
+        hint_1: 'Each wire colour matches a character initial. Check the items in your sack.',
+        hint_2: 'Red=F  Blue=M  Green=P  Yellow=L  Orange=C  Purple=B  White=K  Cyan=H',
+        devAnswer: 'Red→F  Blue→M  Green→P  Yellow→L  Orange→C  Purple→B  White→K  Cyan→H',
+        config: {
+          pairs: [
+            { wire: 'Red',    color: '#c0392b', terminal: 'F', terminalLabel: 'Terminal F' },
+            { wire: 'Blue',   color: '#5dcedf', terminal: 'M', terminalLabel: 'Terminal M' },
+            { wire: 'Green',  color: '#27ae60', terminal: 'P', terminalLabel: 'Terminal P' },
+            { wire: 'Yellow', color: '#f1c40f', terminal: 'L', terminalLabel: 'Terminal L' },
+            { wire: 'Orange', color: '#e67e22', terminal: 'C', terminalLabel: 'Terminal C' },
+            { wire: 'Purple', color: '#8e44ad', terminal: 'B', terminalLabel: 'Terminal B' },
+            { wire: 'White',  color: '#ecf0f1', terminal: 'K', terminalLabel: 'Terminal K' },
+            { wire: 'Cyan',   color: '#1abc9c', terminal: 'H', terminalLabel: 'Terminal H' },
+          ],
+          solvedTitle: 'Board Rewired',
+          solvedMessage: 'All circuits connected. The speaker system has power.',
+        },
+      },
+      {
+        buttonLabel: 'Tune the Scanner',
+        submitLabel: 'Intercept Signal',
+        iframeSrc: '/Input_PoliceScanner_001.html',
+        hint_1: 'Both channels must be correct at the same time. Check your items for the values.',
+        hint_2: 'Frequency: 73 Hz. Amplitude: 42%.',
+        devAnswer: 'Frequency: 73 Hz  |  Amplitude: 42%',
+        config: {
+          targetFreq: 73,
+          targetAmp: 42,
+          tolerance: 1,
+          solvedTitle: 'Signal Intercepted',
+          solvedMessage: 'Broadcast channel open. Ready to transmit.',
+        },
+      },
+      {
+        buttonLabel: 'Calibrate Output',
+        submitLabel: 'Broadcast',
+        iframeSrc: '/Input_SoundCalibration_001.html',
+        hint_1: 'Align each bar by feel. No visual guides.',
+        devAnswer: 'Left=65  Centre=40  Right=55',
+        config: {
+          channels: [
+            { label: 'L', target: 65, color: '#3B82F6' },
+            { label: 'C', target: 40, color: '#10B981' },
+            { label: 'R', target: 55, color: '#F59E0B' },
+          ],
+          tolerance: 3,
+          solvedTitle: 'Signal Broadcast',
+          solvedMessage: 'The loudspeaker crackles to life across the park.',
+        },
       },
     ],
     geoPool: [
